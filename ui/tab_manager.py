@@ -50,7 +50,7 @@ class TabManager:
             ("Responsable del Análisis:", "analyst"),
         ]
         
-        self.machine_entries = {}
+        self.app.machine_entries = {}
         
         for i, (label, key) in enumerate(fields):
             ttk.Label(left_frame, text=label, font=('Arial', 10, 'bold')).grid(
@@ -58,13 +58,13 @@ class TabManager:
             )
             entry = ttk.Entry(left_frame, width=50)
             entry.grid(row=i, column=1, padx=20, pady=10)
-            self.machine_entries[key] = entry
+            self.app.machine_entries[key] = entry
         
         ttk.Label(left_frame, text="Descripción:", font=('Arial', 10, 'bold')).grid(
             row=len(fields), column=0, sticky='nw', padx=20, pady=10
         )
-        self.description_text = tk.Text(left_frame, width=50, height=5)
-        self.description_text.grid(row=len(fields), column=1, padx=20, pady=10)
+        self.app.description_text = tk.Text(left_frame, width=50, height=5)
+        self.app.description_text.grid(row=len(fields), column=1, padx=20, pady=10)
         
         ttk.Button(left_frame, text="Guardar Datos", command=self.save_machine_data).grid(
             row=len(fields)+1, column=1, pady=20
@@ -487,9 +487,9 @@ class TabManager:
     def save_machine_data(self):
         """Guardar datos de la máquina"""
         self.app.machine_data = {
-            key: entry.get() for key, entry in self.machine_entries.items()
+            key: entry.get() for key, entry in self.app.machine_entries.items()
         }
-        self.app.machine_data['description'] = self.description_text.get('1.0', 'end-1c')
+        self.app.machine_data['description'] = self.app.description_text.get('1.0', 'end-1c')
         self.app.machine_data['date'] = datetime.now().strftime("%Y-%m-%d")
         self.app.machine_data['photos'] = self.app.machine_photos
         

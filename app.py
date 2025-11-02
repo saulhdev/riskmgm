@@ -298,7 +298,6 @@ class RiskAnalysisISO13849:
                 img = Image(buf, width=7*inch, height=3.5*inch)
                 story.append(img)
             
-            # Añadir fotos de la máquina
             self.add_photos_to_pdf(story, styles)
             
             # Generar PDF
@@ -356,8 +355,13 @@ class RiskAnalysisISO13849:
         )
         
         if filename:
+            # Limpiar machine_data de cualquier clave de fotos para evitar duplicados
+            machine_data_clean = dict(self.machine_data)
+            for k in ('photos', 'machine_photos', 'images'):
+                machine_data_clean.pop(k, None)
+
             project_data = {
-                'machine_data': self.machine_data,
+                'machine_data': machine_data_clean,
                 'risks': self.risks,
                 'photos': self.machine_photos,
                 'hrn_calculations': self.hrn_calculations
@@ -379,7 +383,20 @@ class RiskAnalysisISO13849:
                 project_data = json.load(f)
             
             # Cargar datos de máquina
-            self.machine_data = project_data.get('machine_data', {})
+            self.machine_data = project_data.get('machine_data', {}) or {}
+
+            # Migrar fotos anidadas si existieran (compatibilidad con archivos antiguos)
+            nested_photos = self.machine_data.pop('photos', None)
+
+            # Elegir fotos preferentemente desde la clave superior
+            if 'photos' in project_data:
+                self.machine_photos = project_data.get('photos') or []
+            elif nested_photos is not None:
+                self.machine_photos = nested_photos
+            else:
+                self.machine_photos = []
+
+            # Cargar datos en la interfaz
             for key, value in self.machine_data.items():
                 if key in self.machine_entries:
                     self.machine_entries[key].delete(0, 'end')
@@ -388,8 +405,7 @@ class RiskAnalysisISO13849:
                     self.description_text.delete('1.0', 'end')
                     self.description_text.insert('1.0', value)
             
-            # Cargar fotos
-            self.machine_photos = project_data.get('photos', [])
+            # Cargar fotos (ya migradas)
             self.update_photos_display()
             
             # Cargar riesgos ISO 13849
@@ -398,7 +414,6 @@ class RiskAnalysisISO13849:
             # Actualizar treeview de riesgos
             for item in self.risk_tree.get_children():
                 self.risk_tree.delete(item)
-            
             for idx, risk in enumerate(self.risks, 1):
                 self.risk_tree.insert('', 'end', text=str(idx), values=(
                     risk['description'][:30] + '...' if len(risk['description']) > 30 else risk['description'],
@@ -415,7 +430,6 @@ class RiskAnalysisISO13849:
             # Actualizar treeview de HRN
             for item in self.hrn_tree.get_children():
                 self.hrn_tree.delete(item)
-            
             for idx, calc in enumerate(self.hrn_calculations, 1):
                 self.hrn_tree.insert('', 'end', text=str(idx), values=(
                     calc['description'][:40] + '...' if len(calc['description']) > 40 else calc['description'],
