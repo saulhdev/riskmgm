@@ -674,7 +674,11 @@ class RiskAnalysisISO13849:
             return
         
         try:
-            doc = SimpleDocTemplate(filename, pagesize=A4)
+            doc = SimpleDocTemplate(filename, pagesize=letter)
+            doc.topMargin = 0.75 * inch
+            doc.bottomMargin = 0.75 * inch
+            doc.leftMargin = 1 * inch
+            doc.rightMargin = 1 * inch
             story = []
             styles = getSampleStyleSheet()
             
@@ -682,9 +686,9 @@ class RiskAnalysisISO13849:
             title_style = ParagraphStyle(
                 'CustomTitle',
                 parent=styles['Heading1'],
-                fontSize=18,
+                fontSize=16,
                 textColor=colors.HexColor('#003366'),
-                spaceAfter=30,
+                spaceAfter=20,
                 alignment=TA_CENTER
             )
             
@@ -698,8 +702,7 @@ class RiskAnalysisISO13849:
             )
             
             # Título
-            story.append(Paragraph("ANÁLISIS DE RIESGO", title_style))
-            story.append(Paragraph("Según ISO 13849-1", styles['Normal']))
+            story.append(Paragraph("Análisis de Riesgo según ISO 13849-1", title_style))
             story.append(Spacer(1, 0.3*inch))
             
             # Datos de la máquina
@@ -715,8 +718,7 @@ class RiskAnalysisISO13849:
                 ['Ubicación', self.machine_data.get('location', '')],
                 ['Analista', self.machine_data.get('analyst', '')],
                 ['Fecha de Análisis', self.machine_data.get('date', '')],
-            ]
-            
+            ]        
             machine_table = Table(machine_table_data, colWidths=[2*inch, 4*inch])
             machine_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#003366')),
