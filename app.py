@@ -24,16 +24,13 @@ class RiskAnalysisISO13849:
         self.root.title("Análisis de Riesgo ISO 13849-1")
         self.root.geometry("1200x800")
         
-        # Datos de la aplicación
         self.machine_data = {}
         self.risks = []
-        self.machine_photos = []  # Lista para almacenar fotos
+        self.machine_photos = []
         
-        # Configurar notebook (pestañas)
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(fill='both', expand=True, padx=10, pady=10)
         
-        # Crear pestañas
         self.create_machine_tab()
         self.create_risk_tab()
         self.create_analysis_tab()
@@ -45,7 +42,6 @@ class RiskAnalysisISO13849:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="Datos de la Máquina")
         
-        # Frame principal con scroll
         canvas = tk.Canvas(frame)
         scrollbar = ttk.Scrollbar(frame, orient="vertical", command=canvas.yview)
         scrollable_frame = ttk.Frame(canvas)
@@ -58,7 +54,6 @@ class RiskAnalysisISO13849:
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
         
-        # Campos de entrada
         fields = [
             ("Tipo de Máquina:", "machine_type"),
             ("Modelo:", "model"),
@@ -79,30 +74,25 @@ class RiskAnalysisISO13849:
             entry.grid(row=i, column=1, padx=20, pady=10)
             self.machine_entries[key] = entry
         
-        # Descripción
         ttk.Label(scrollable_frame, text="Descripción:", font=('Arial', 10, 'bold')).grid(
             row=len(fields), column=0, sticky='nw', padx=20, pady=10
         )
         self.description_text = tk.Text(scrollable_frame, width=50, height=5)
         self.description_text.grid(row=len(fields), column=1, padx=20, pady=10)
         
-        # Sección de fotos
         ttk.Label(scrollable_frame, text="Fotografías:", font=('Arial', 10, 'bold')).grid(
             row=len(fields)+1, column=0, sticky='nw', padx=20, pady=10
         )
         
-        # Frame para gestión de fotos
         photo_frame = ttk.Frame(scrollable_frame)
         photo_frame.grid(row=len(fields)+1, column=1, padx=20, pady=10, sticky='w')
         
         ttk.Button(photo_frame, text="📷 Añadir Foto", command=self.add_photo).pack(side='left', padx=5)
-        ttk.Button(photo_frame, text="🗑️ Eliminar Foto", command=self.remove_photo).pack(side='left', padx=5)
-        
-        # Frame para mostrar miniaturas de fotos
+        ttk.Button(photo_frame, text="🗑️ Eliminar Foto", style='danger', command=self.remove_photo).pack(side='left', padx=5)
+                
         self.photos_display_frame = ttk.LabelFrame(scrollable_frame, text="Fotos de la Máquina", padding=10)
         self.photos_display_frame.grid(row=len(fields)+2, column=0, columnspan=2, padx=20, pady=10, sticky='ew')
         
-        # Canvas para las fotos con scroll horizontal
         self.photos_canvas = tk.Canvas(self.photos_display_frame, height=150, bg='white')
         self.photos_scrollbar = ttk.Scrollbar(self.photos_display_frame, orient="horizontal", command=self.photos_canvas.xview)
         self.photos_inner_frame = ttk.Frame(self.photos_canvas)
@@ -113,9 +103,8 @@ class RiskAnalysisISO13849:
         self.photos_canvas.pack(fill='x', expand=True)
         self.photos_scrollbar.pack(fill='x')
         
-        self.photo_labels = []  # Para mantener referencias de las imágenes
+        self.photo_labels = [] 
         
-        # Botón guardar
         ttk.Button(scrollable_frame, text="Guardar Datos", command=self.save_machine_data).grid(
             row=len(fields)+3, column=1, pady=20
         )
