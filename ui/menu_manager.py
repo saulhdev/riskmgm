@@ -1,4 +1,3 @@
-import tkinter as tk
 from tkinter import Menu
 import webbrowser
 from tkinter import messagebox
@@ -43,3 +42,4 @@ class MenuManager:
     def acerca_de(self):
         """Mostrar información acerca de la aplicación"""
         messagebox.showinfo("Acerca de", "Risk Management\nVersión 1.0")
+
