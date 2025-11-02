@@ -439,6 +439,158 @@ class RiskAnalysisISO13849:
             
             messagebox.showinfo("Éxito", "Proyecto cargado correctamente")
 
+    def update_analysis(self):
+        """Actualizar análisis y gráficos"""
+        if not self.risks and not self.hrn_calculations:
+            messagebox.showinfo("Información", "No hay datos para analizar")
+            return
+        
+        self.fig.clear()
+
+        has_iso_risks = len(self.risks) > 0
+        has_hrn_calcs = len(self.hrn_calculations) > 0
+        
+        # Determinar número de subplots
+        if has_iso_risks and has_hrn_calcs:
+            # Mostrar ambos análisis
+            ax1 = self.fig.add_subplot(221)
+            ax2 = self.fig.add_subplot(222)
+            ax3 = self.fig.add_subplot(223)
+            ax4 = self.fig.add_subplot(224)
+        elif has_iso_risks:
+            ax1 = self.fig.add_subplot(121)
+            ax2 = self.fig.add_subplot(122)
+        elif has_hrn_calcs:
+            ax3 = self.fig.add_subplot(121)
+            ax4 = self.fig.add_subplot(122)
+        
+        stats_text = ""
+        
+        # Análisis ISO 13849
+        if has_iso_risks:
+            total = len(self.risks)
+            plr_count = {}
+            for risk in self.risks:
+                plr = risk['plr']
+                plr_count[plr] = plr_count.get(plr, 0) + 1
+            
+            stats_text += f"=== ISO 13849-1 ===\n"
+            stats_text += f"Total de Riesgos: {total}\n"
+            stats_text += "Distribución por PLr:\n"
+            for plr in sorted(plr_count.keys()):
+                percentage = (plr_count[plr] / total) * 100
+                stats_text += f"  PLr {plr}: {plr_count[plr]} ({percentage:.1f}%)\n"
+            
+            # Gráfico de barras - Distribución PLr
+            plr_labels = sorted(plr_count.keys())
+            plr_values = [plr_count[plr] for plr in plr_labels]
+            colors_map = {'A': '#90EE90', 'B': '#FFFF99', 'C': '#FFD700', 
+                         'D': '#FFA500', 'E': '#FF6347'}
+            bar_colors = [colors_map.get(plr, 'gray') for plr in plr_labels]
+            
+            ax1.bar(plr_labels, plr_values, color=bar_colors, edgecolor='black')
+            ax1.set_xlabel('Performance Level Requerido')
+            ax1.set_ylabel('Cantidad de Riesgos')
+            ax1.set_title('Distribución de Riesgos por PLr (ISO 13849)')
+            ax1.grid(axis='y', alpha=0.3)
+            
+            # Gráfico circular - Severidad
+            s_count = {}
+            for risk in self.risks:
+                s = 'S1' if 'S1' in risk['severity'] else 'S2'
+                s_count[s] = s_count.get(s, 0) + 1
+            
+            ax2.pie(s_count.values(), labels=s_count.keys(), autopct='%1.1f%%',
+                   colors=['#90EE90', '#FF6347'], startangle=90)
+            ax2.set_title('Distribución por Severidad')
+        
+        # Análisis HRN
+        if has_hrn_calcs:
+            total_hrn = len(self.hrn_calculations)
+            hrn_levels = {}
+            
+            stats_text += f"\n=== Método HRN ===\n"
+            stats_text += f"Total de Cálculos: {total_hrn}\n"
+            stats_text += "Distribución por Nivel:\n"
+            
+            for calc in self.hrn_calculations:
+                level = calc['level']
+                hrn_levels[level] = hrn_levels.get(level, 0) + 1
+            
+            for level in hrn_levels:
+                percentage = (hrn_levels[level] / total_hrn) * 100
+                stats_text += f"  {level}: {hrn_levels[level]} ({percentage:.1f}%)\n"
+            
+            # Gráfico de barras - Distribución HRN
+            level_order = [
+                "Riesgo Despreciable",
+                "Riesgo Muy Bajo",
+                "Riesgo Bajo",
+                "Riesgo Significante",
+                "Riesgo Alto",
+                "Riesgo Muy Alto",
+                "Riesgo Extremo",
+                "Riesgo Inaceptable"
+            ]
+            
+            level_colors = {
+                "Riesgo Despreciable": '#90EE90',
+                "Riesgo Muy Bajo": '#98FB98',
+                "Riesgo Bajo": '#FFFF99',
+                "Riesgo Significante": '#FFD700',
+                "Riesgo Alto": '#FFA500',
+                "Riesgo Muy Alto": '#FF6347',
+                "Riesgo Extremo": '#DC143C',
+                "Riesgo Inaceptable": '#8B0000'
+            }
+            
+            present_levels = [level for level in level_order if level in hrn_levels]
+            level_values = [hrn_levels[level] for level in present_levels]
+            bar_colors_hrn = [level_colors[level] for level in present_levels]
+            
+            ax3.bar(range(len(present_levels)), level_values, color=bar_colors_hrn, edgecolor='black')
+            ax3.set_xticks(range(len(present_levels)))
+            ax3.set_xticklabels([l.replace('Riesgo ', '') for l in present_levels], rotation=45, ha='right')
+            ax3.set_xlabel('Nivel de Riesgo')
+            ax3.set_ylabel('Cantidad')
+            ax3.set_title('Distribución de Riesgos HRN')
+            ax3.grid(axis='y', alpha=0.3)
+            
+            # Gráfico de valores HRN individuales
+            hrn_values = [calc['hrn'] for calc in self.hrn_calculations]
+            descriptions = [calc['description'][:15] + '...' if len(calc['description']) > 15 
+                          else calc['description'] for calc in self.hrn_calculations]
+            
+            colors_hrn_bars = []
+            for hrn in hrn_values:
+                if hrn <= 1:
+                    colors_hrn_bars.append('#90EE90')
+                elif hrn <= 5:
+                    colors_hrn_bars.append('#98FB98')
+                elif hrn <= 10:
+                    colors_hrn_bars.append('#FFFF99')
+                elif hrn <= 50:
+                    colors_hrn_bars.append('#FFD700')
+                elif hrn <= 100:
+                    colors_hrn_bars.append('#FFA500')
+                elif hrn <= 500:
+                    colors_hrn_bars.append('#FF6347')
+                elif hrn <= 1000:
+                    colors_hrn_bars.append('#DC143C')
+                else:
+                    colors_hrn_bars.append('#8B0000')
+            
+            ax4.barh(range(len(hrn_values)), hrn_values, color=colors_hrn_bars, edgecolor='black')
+            ax4.set_yticks(range(len(hrn_values)))
+            ax4.set_yticklabels(descriptions)
+            ax4.set_xlabel('Valor HRN')
+            ax4.set_title('Valores HRN Calculados')
+            ax4.grid(axis='x', alpha=0.3)
+        
+        self.stats_label.config(text=stats_text)
+        self.fig.tight_layout()
+        self.canvas.draw()
+
 if __name__ == "__main__":
     root = ttkbootstrap.Window()
 

@@ -150,9 +150,9 @@ class TabManager:
         self.avoidance.bind('<<ComboboxSelected>>', self.calculate_plr)
         
         ttk.Label(left_frame, text="Medidas de Control:").grid(row=6, column=0, sticky='nw', pady=5)
-        self.control_measures = tk.Text(left_frame, width=40, height=4)
-        self.control_measures.grid(row=6, column=1, pady=5, padx=5)
-        
+        self.app.control_measures = tk.Text(left_frame, width=40, height=4)
+        self.app.control_measures.grid(row=6, column=1, pady=5, padx=5)
+
         btn_frame = ttk.Frame(left_frame)
         btn_frame.grid(row=7, column=0, columnspan=2, pady=20)
         
@@ -163,24 +163,24 @@ class TabManager:
         right_frame.pack(side='right', fill='both', expand=True, padx=5, pady=5)
         
         columns = ('Descripción', 'Zona', 'S', 'F', 'P', 'PLr')
-        self.risk_tree = ttk.Treeview(right_frame, columns=columns, show='tree headings', height=20)
-        
-        self.risk_tree.heading('#0', text='#')
-        self.risk_tree.column('#0', width=30)
-        
+        self.app.risk_tree = ttk.Treeview(right_frame, columns=columns, show='tree headings', height=20)
+
+        self.app.risk_tree.heading('#0', text='#')
+        self.app.risk_tree.column('#0', width=30)
+
         for col in columns:
-            self.risk_tree.heading(col, text=col)
+            self.app.risk_tree.heading(col, text=col)
             if col == 'Descripción':
-                self.risk_tree.column(col, width=200)
+                self.app.risk_tree.column(col, width=200)
             elif col == 'Zona':
-                self.risk_tree.column(col, width=120)
+                self.app.risk_tree.column(col, width=120)
             else:
-                self.risk_tree.column(col, width=50)
-        
-        scrollbar = ttk.Scrollbar(right_frame, orient="vertical", command=self.risk_tree.yview)
-        self.risk_tree.configure(yscrollcommand=scrollbar.set)
-        
-        self.risk_tree.pack(side='left', fill='both', expand=True)
+                self.app.risk_tree.column(col, width=50)
+
+        scrollbar = ttk.Scrollbar(right_frame, orient="vertical", command=self.app.risk_tree.yview)
+        self.app.risk_tree.configure(yscrollcommand=scrollbar.set)
+
+        self.app.risk_tree.pack(side='left', fill='both', expand=True)
         scrollbar.pack(side='right', fill='y')
         
         ttk.Button(right_frame, text="Eliminar Seleccionado", 
@@ -308,21 +308,21 @@ class TabManager:
         history_frame.pack(fill='both', expand=True, pady=(0, 10))
         
         columns = ('Descripción', 'HRN', 'Nivel')
-        self.hrn_tree = ttk.Treeview(history_frame, columns=columns, show='tree headings', height=10)
+        self.app.hrn_tree = ttk.Treeview(history_frame, columns=columns, show='tree headings', height=10)
         
-        self.hrn_tree.heading('#0', text='#')
-        self.hrn_tree.column('#0', width=30)
-        self.hrn_tree.heading('Descripción', text='Descripción')
-        self.hrn_tree.column('Descripción', width=250)
-        self.hrn_tree.heading('HRN', text='HRN')
-        self.hrn_tree.column('HRN', width=80)
-        self.hrn_tree.heading('Nivel', text='Nivel de Riesgo')
-        self.hrn_tree.column('Nivel', width=150)
-        
-        hrn_scrollbar = ttk.Scrollbar(history_frame, orient="vertical", command=self.hrn_tree.yview)
-        self.hrn_tree.configure(yscrollcommand=hrn_scrollbar.set)
-        
-        self.hrn_tree.pack(side='left', fill='both', expand=True)
+        self.app.hrn_tree.heading('#0', text='#')
+        self.app.hrn_tree.column('#0', width=30)
+        self.app.hrn_tree.heading('Descripción', text='Descripción')
+        self.app.hrn_tree.column('Descripción', width=250)
+        self.app.hrn_tree.heading('HRN', text='HRN')
+        self.app.hrn_tree.column('HRN', width=80)
+        self.app.hrn_tree.heading('Nivel', text='Nivel de Riesgo')
+        self.app.hrn_tree.column('Nivel', width=150)
+
+        hrn_scrollbar = ttk.Scrollbar(history_frame, orient="vertical", command=self.app.hrn_tree.yview)
+        self.app.hrn_tree.configure(yscrollcommand=hrn_scrollbar.set)
+
+        self.app.hrn_tree.pack(side='left', fill='both', expand=True)
         hrn_scrollbar.pack(side='right', fill='y')
         
         ttk.Button(history_frame, text="🗑️ Eliminar Seleccionado", 
@@ -355,21 +355,21 @@ class TabManager:
         toolbar = ttk.Frame(frame)
         toolbar.pack(fill='x', padx=10, pady=(10, 0))
         ttk.Button(toolbar, text="Actualizar Análisis",
-                   command=self.update_analysis).pack(side='left')
+                   command=self.app.update_analysis).pack(side='left')
 
         stats_frame = ttk.LabelFrame(frame, text="Estadísticas", padding=10)
         stats_frame.pack(fill='x', padx=10, pady=10)
-        
-        self.stats_label = ttk.Label(stats_frame, text="No hay riesgos añadidos", 
-                                     font=('Arial', 10))
-        self.stats_label.pack()
-        
+
+        self.app.stats_label = ttk.Label(stats_frame, text="No hay riesgos añadidos",
+                                           font=('Arial', 10))
+        self.app.stats_label.pack()
+
         graph_frame = ttk.Frame(frame)
         graph_frame.pack(fill='both', expand=True, padx=10, pady=10)
         
-        self.fig = Figure(figsize=(12, 5))
-        self.canvas = FigureCanvasTkAgg(self.fig, master=graph_frame)
-        self.canvas.get_tk_widget().pack(fill='both', expand=True)
+        self.app.fig = Figure(figsize=(12, 5))
+        self.app.canvas = FigureCanvasTkAgg(self.app.fig, master=graph_frame)
+        self.app.canvas.get_tk_widget().pack(fill='both', expand=True)
     
     def create_about_tab(self):
         frame = ttk.Frame(self.notebook)
@@ -608,13 +608,13 @@ class TabManager:
             'frequency': self.frequency.get(),
             'avoidance': self.avoidance.get(),
             'plr': plr.upper(),
-            'control_measures': self.control_measures.get('1.0', 'end-1c')
+            'control_measures': self.app.control_measures.get('1.0', 'end-1c')
         }
         
         self.app.risks.append(risk)
         
         idx = len(self.app.risks)
-        self.risk_tree.insert('', 'end', text=str(idx), values=(
+        self.app.risk_tree.insert('', 'end', text=str(idx), values=(
             risk['description'][:30] + '...' if len(risk['description']) > 30 else risk['description'],
             risk['zone'],
             risk['severity'].split('-')[0].strip(),
@@ -628,29 +628,29 @@ class TabManager:
     
     def clear_risk_form(self):
         """Limpiar formulario de riesgo"""
-        self.risk_desc.delete(0, 'end')
-        self.risk_zone.delete(0, 'end')
-        self.severity.set('')
-        self.frequency.set('')
-        self.avoidance.set('')
-        self.control_measures.delete('1.0', 'end')
-        self.plr_label.config(text="Seleccione S, F y P", foreground='blue', 
+        self.app.risk_desc.delete(0, 'end')
+        self.app.risk_zone.delete(0, 'end')
+        self.app.severity.set('')
+        self.app.frequency.set('')
+        self.app.avoidance.set('')
+        self.app.control_measures.delete('1.0', 'end')
+        self.app.plr_label.config(text="Seleccione S, F y P", foreground='blue', 
                              font=('Arial', 10))
     
     def delete_risk(self):
         """Eliminar riesgo seleccionado"""
-        selected = self.risk_tree.selection()
+        selected = self.app.risk_tree.selection()
         if not selected:
             messagebox.showwarning("Advertencia", "Seleccione un riesgo para eliminar")
             return
         
         if messagebox.askyesno("Confirmar", "¿Desea eliminar el riesgo seleccionado?"):
-            idx = int(self.risk_tree.item(selected[0])['text']) - 1
+            idx = int(self.app.risk_tree.item(selected[0])['text']) - 1
             self.app.risks.pop(idx)
-            self.risk_tree.delete(selected[0])
-            
-            for i, item in enumerate(self.risk_tree.get_children()):
-                self.risk_tree.item(item, text=str(i+1))
+            self.app.risk_tree.delete(selected[0])
+
+            for i, item in enumerate(self.app.risk_tree.get_children()):
+                self.app.risk_tree.item(item, text=str(i+1))
     
     def calculate_hrn(self, event=None):
         """Calcular HRN"""
@@ -743,7 +743,7 @@ class TabManager:
         self.app.hrn_calculations.append(calc)
         
         idx = len(self.app.hrn_calculations)
-        self.hrn_tree.insert('', 'end', text=str(idx), values=(
+        self.app.hrn_tree.insert('', 'end', text=str(idx), values=(
             description[:40] + '...' if len(description) > 40 else description,
             f"{calc['hrn']:.2f}",
             calc['level']
@@ -767,170 +767,18 @@ class TabManager:
     
     def delete_hrn_calculation(self):
         """Eliminar cálculo HRN seleccionado"""
-        selected = self.hrn_tree.selection()
+        selected = self.app.hrn_tree.selection()
         if not selected:
             messagebox.showwarning("Advertencia", "Seleccione un cálculo para eliminar")
             return
         
         if messagebox.askyesno("Confirmar", "¿Desea eliminar el cálculo seleccionado?"):
-            idx = int(self.hrn_tree.item(selected[0])['text']) - 1
+            idx = int(self.app.hrn_tree.item(selected[0])['text']) - 1
             self.app.hrn_calculations.pop(idx)
-            self.hrn_tree.delete(selected[0])
-            
-            for i, item in enumerate(self.hrn_tree.get_children()):
-                self.hrn_tree.item(item, text=str(i+1))
+            self.app.hrn_tree.delete(selected[0])
 
-    def update_analysis(self):
-        """Actualizar análisis y gráficos"""
-        if not self.app.risks and not self.app.hrn_calculations:
-            messagebox.showinfo("Información", "No hay datos para analizar")
-            return
-        
-        self.fig.clear()
-
-        has_iso_risks = len(self.app.risks) > 0
-        has_hrn_calcs = len(self.app.hrn_calculations) > 0
-        
-        # Determinar número de subplots
-        if has_iso_risks and has_hrn_calcs:
-            # Mostrar ambos análisis
-            ax1 = self.fig.add_subplot(221)
-            ax2 = self.fig.add_subplot(222)
-            ax3 = self.fig.add_subplot(223)
-            ax4 = self.fig.add_subplot(224)
-        elif has_iso_risks:
-            ax1 = self.fig.add_subplot(121)
-            ax2 = self.fig.add_subplot(122)
-        elif has_hrn_calcs:
-            ax3 = self.fig.add_subplot(121)
-            ax4 = self.fig.add_subplot(122)
-        
-        stats_text = ""
-        
-        # Análisis ISO 13849
-        if has_iso_risks:
-            total = len(self.app.risks)
-            plr_count = {}
-            for risk in self.app.risks:
-                plr = risk['plr']
-                plr_count[plr] = plr_count.get(plr, 0) + 1
-            
-            stats_text += f"=== ISO 13849-1 ===\n"
-            stats_text += f"Total de Riesgos: {total}\n"
-            stats_text += "Distribución por PLr:\n"
-            for plr in sorted(plr_count.keys()):
-                percentage = (plr_count[plr] / total) * 100
-                stats_text += f"  PLr {plr}: {plr_count[plr]} ({percentage:.1f}%)\n"
-            
-            # Gráfico de barras - Distribución PLr
-            plr_labels = sorted(plr_count.keys())
-            plr_values = [plr_count[plr] for plr in plr_labels]
-            colors_map = {'A': '#90EE90', 'B': '#FFFF99', 'C': '#FFD700', 
-                         'D': '#FFA500', 'E': '#FF6347'}
-            bar_colors = [colors_map.get(plr, 'gray') for plr in plr_labels]
-            
-            ax1.bar(plr_labels, plr_values, color=bar_colors, edgecolor='black')
-            ax1.set_xlabel('Performance Level Requerido')
-            ax1.set_ylabel('Cantidad de Riesgos')
-            ax1.set_title('Distribución de Riesgos por PLr (ISO 13849)')
-            ax1.grid(axis='y', alpha=0.3)
-            
-            # Gráfico circular - Severidad
-            s_count = {}
-            for risk in self.app.risks:
-                s = 'S1' if 'S1' in risk['severity'] else 'S2'
-                s_count[s] = s_count.get(s, 0) + 1
-            
-            ax2.pie(s_count.values(), labels=s_count.keys(), autopct='%1.1f%%',
-                   colors=['#90EE90', '#FF6347'], startangle=90)
-            ax2.set_title('Distribución por Severidad')
-        
-        # Análisis HRN
-        if has_hrn_calcs:
-            total_hrn = len(self.app.hrn_calculations)
-            hrn_levels = {}
-            
-            stats_text += f"\n=== Método HRN ===\n"
-            stats_text += f"Total de Cálculos: {total_hrn}\n"
-            stats_text += "Distribución por Nivel:\n"
-            
-            for calc in self.app.hrn_calculations:
-                level = calc['level']
-                hrn_levels[level] = hrn_levels.get(level, 0) + 1
-            
-            for level in hrn_levels:
-                percentage = (hrn_levels[level] / total_hrn) * 100
-                stats_text += f"  {level}: {hrn_levels[level]} ({percentage:.1f}%)\n"
-            
-            # Gráfico de barras - Distribución HRN
-            level_order = [
-                "Riesgo Despreciable",
-                "Riesgo Muy Bajo",
-                "Riesgo Bajo",
-                "Riesgo Significante",
-                "Riesgo Alto",
-                "Riesgo Muy Alto",
-                "Riesgo Extremo",
-                "Riesgo Inaceptable"
-            ]
-            
-            level_colors = {
-                "Riesgo Despreciable": '#90EE90',
-                "Riesgo Muy Bajo": '#98FB98',
-                "Riesgo Bajo": '#FFFF99',
-                "Riesgo Significante": '#FFD700',
-                "Riesgo Alto": '#FFA500',
-                "Riesgo Muy Alto": '#FF6347',
-                "Riesgo Extremo": '#DC143C',
-                "Riesgo Inaceptable": '#8B0000'
-            }
-            
-            present_levels = [level for level in level_order if level in hrn_levels]
-            level_values = [hrn_levels[level] for level in present_levels]
-            bar_colors_hrn = [level_colors[level] for level in present_levels]
-            
-            ax3.bar(range(len(present_levels)), level_values, color=bar_colors_hrn, edgecolor='black')
-            ax3.set_xticks(range(len(present_levels)))
-            ax3.set_xticklabels([l.replace('Riesgo ', '') for l in present_levels], rotation=45, ha='right')
-            ax3.set_xlabel('Nivel de Riesgo')
-            ax3.set_ylabel('Cantidad')
-            ax3.set_title('Distribución de Riesgos HRN')
-            ax3.grid(axis='y', alpha=0.3)
-            
-            # Gráfico de valores HRN individuales
-            hrn_values = [calc['hrn'] for calc in self.app.hrn_calculations]
-            descriptions = [calc['description'][:15] + '...' if len(calc['description']) > 15 
-                          else calc['description'] for calc in self.app.hrn_calculations]
-            
-            colors_hrn_bars = []
-            for hrn in hrn_values:
-                if hrn <= 1:
-                    colors_hrn_bars.append('#90EE90')
-                elif hrn <= 5:
-                    colors_hrn_bars.append('#98FB98')
-                elif hrn <= 10:
-                    colors_hrn_bars.append('#FFFF99')
-                elif hrn <= 50:
-                    colors_hrn_bars.append('#FFD700')
-                elif hrn <= 100:
-                    colors_hrn_bars.append('#FFA500')
-                elif hrn <= 500:
-                    colors_hrn_bars.append('#FF6347')
-                elif hrn <= 1000:
-                    colors_hrn_bars.append('#DC143C')
-                else:
-                    colors_hrn_bars.append('#8B0000')
-            
-            ax4.barh(range(len(hrn_values)), hrn_values, color=colors_hrn_bars, edgecolor='black')
-            ax4.set_yticks(range(len(hrn_values)))
-            ax4.set_yticklabels(descriptions)
-            ax4.set_xlabel('Valor HRN')
-            ax4.set_title('Valores HRN Calculados')
-            ax4.grid(axis='x', alpha=0.3)
-        
-        self.stats_label.config(text=stats_text)
-        self.fig.tight_layout()
-        self.canvas.draw()
+            for i, item in enumerate(self.app.hrn_tree.get_children()):
+                self.app.hrn_tree.item(item, text=str(i+1))
 
 
 
