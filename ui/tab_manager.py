@@ -83,17 +83,17 @@ class TabManager:
         self.photos_display_frame = ttk.LabelFrame(right_frame, text="Fotos de la Máquina", padding=10)
         self.photos_display_frame.pack(fill='both', expand=True, pady=10)
         
-        self.photos_canvas = tk.Canvas(self.photos_display_frame, height=150, bg='white')
-        self.photos_scrollbar = ttk.Scrollbar(self.photos_display_frame, orient="horizontal", command=self.photos_canvas.xview)
-        self.photos_inner_frame = ttk.Frame(self.photos_canvas)
+        self.app.photos_canvas = tk.Canvas(self.photos_display_frame, height=150, bg='white')
+        self.photos_scrollbar = ttk.Scrollbar(self.photos_display_frame, orient="horizontal", command=self.app.photos_canvas.xview)
+        self.app.photos_inner_frame = ttk.Frame(self.app.photos_canvas)
         
-        self.photos_canvas.create_window((0, 0), window=self.photos_inner_frame, anchor="nw")
-        self.photos_canvas.configure(xscrollcommand=self.photos_scrollbar.set)
+        self.app.photos_canvas.create_window((0, 0), window=self.app.photos_inner_frame, anchor="nw")
+        self.app.photos_canvas.configure(xscrollcommand=self.photos_scrollbar.set)
         
-        self.photos_canvas.pack(fill='x', expand=True)
+        self.app.photos_canvas.pack(fill='x', expand=True)
         self.photos_scrollbar.pack(fill='x')
         
-        self.photo_labels = []
+        self.app.photo_labels = []
         
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
@@ -372,41 +372,44 @@ class TabManager:
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
     
     def create_about_tab(self):
-        """Pestaña de información del sistema"""
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="Acerca de")
-        
-        content_frame = ttk.Frame(frame)
+        self.render_about(frame)
+
+    @staticmethod
+    def render_about(parent):
+        content_frame = ttk.Frame(parent)
         content_frame.place(relx=0.5, rely=0.5, anchor='center')
-        
+
         # Título
         title_label = ttk.Label(
-            content_frame, 
+            content_frame,
             text="Sistema de Análisis de Riesgo",
             font=('Arial', 20, 'bold'),
-            foreground='#003366'
+            foreground='#003366',
+            padding=(0, 0, 35, 0)  # (left, right, top, bottom)
         )
-        title_label.pack(pady=20)
-        
+        title_label.pack(pady=10)
+
         subtitle_label = ttk.Label(
             content_frame,
             text="ISO 13849-1",
-            font=('Arial', 16),
+            font=('Arial', 8),
             foreground='#666666'
         )
         subtitle_label.pack(pady=5)
-        
+
         # Separador
         separator1 = ttk.Separator(content_frame, orient='horizontal')
-        separator1.pack(fill='x', pady=20, padx=50)
-        
+        separator1.pack(fill='x', pady=5, padx=50)
+
         # Frame de información
         info_frame = ttk.Frame(content_frame)
-        info_frame.pack(pady=20)
-        
+        info_frame.pack(pady=10)
+
         # Versión
         version_frame = ttk.Frame(info_frame)
-        version_frame.pack(pady=10)
+        version_frame.pack(pady=5)
         ttk.Label(
             version_frame,
             text="Versión:",
@@ -418,9 +421,8 @@ class TabManager:
             font=('Arial', 12)
         ).pack(side='left')
         
-        # Fecha de creación
         date_frame = ttk.Frame(info_frame)
-        date_frame.pack(pady=10)
+        date_frame.pack(pady=3)
         ttk.Label(
             date_frame,
             text="Build Date:",
@@ -434,7 +436,7 @@ class TabManager:
         
         # Autor
         author_frame = ttk.Frame(info_frame)
-        author_frame.pack(pady=10)
+        author_frame.pack(pady=5)
         ttk.Label(
             author_frame,
             text="Autor:",
@@ -448,7 +450,7 @@ class TabManager:
         
         # Separador
         separator2 = ttk.Separator(content_frame, orient='horizontal')
-        separator2.pack(fill='x', pady=20, padx=50)
+        separator2.pack(fill='x', pady=10, padx=50)
         
         # Universidad
         university_label = ttk.Label(
@@ -481,15 +483,15 @@ class TabManager:
             foreground='#999999'
         )
         copyright_label.pack(pady=20)
-        
+    
     def save_machine_data(self):
         """Guardar datos de la máquina"""
-        self.machine_data = {
+        self.app.machine_data = {
             key: entry.get() for key, entry in self.machine_entries.items()
         }
-        self.machine_data['description'] = self.description_text.get('1.0', 'end-1c')
-        self.machine_data['date'] = datetime.now().strftime("%Y-%m-%d")
-        self.machine_data['photos'] = self.machine_photos
+        self.app.machine_data['description'] = self.description_text.get('1.0', 'end-1c')
+        self.app.machine_data['date'] = datetime.now().strftime("%Y-%m-%d")
+        self.app.machine_data['photos'] = self.app.machine_photos
         
         messagebox.showinfo("Éxito", "Datos de la máquina guardados correctamente")
     
@@ -518,10 +520,10 @@ class TabManager:
                     'data': img_data,
                     'path': file_path
                 }
-                self.machine_photos.append(photo_info)
+                self.app.machine_photos.append(photo_info)
                 
                 # Actualizar visualización
-                self.update_photos_display()
+                self.app.update_photos_display()
                 
                 messagebox.showinfo("Éxito", f"Foto '{filename}' añadida correctamente")
                 
@@ -530,30 +532,30 @@ class TabManager:
     
     def remove_photo(self):
         """Eliminar foto seleccionada"""
-        if not self.machine_photos:
+        if not self.app.machine_photos:
             messagebox.showwarning("Advertencia", "No hay fotos para eliminar")
             return
         
         # Crear ventana de selección
         remove_window = tk.Toplevel(self.root)
         remove_window.title("Eliminar Foto")
-        remove_window.geometry("400x300")
+        remove_window.geometry("400x400")
         
         ttk.Label(remove_window, text="Seleccione la foto a eliminar:", 
                  font=('Arial', 10, 'bold')).pack(pady=10)
         
         listbox = tk.Listbox(remove_window, height=10)
         listbox.pack(fill='both', expand=True, padx=20, pady=10)
-        
-        for i, photo in enumerate(self.machine_photos):
+
+        for i, photo in enumerate(self.app.machine_photos):
             listbox.insert(tk.END, f"{i+1}. {photo['filename']}")
         
         def delete_selected():
             selection = listbox.curselection()
             if selection:
                 idx = selection[0]
-                removed = self.machine_photos.pop(idx)
-                self.update_photos_display()
+                removed = self.app.machine_photos.pop(idx)
+                self.app.update_photos_display()
                 messagebox.showinfo("Éxito", f"Foto '{removed['filename']}' eliminada")
                 remove_window.destroy()
             else:
@@ -609,9 +611,9 @@ class TabManager:
             'control_measures': self.control_measures.get('1.0', 'end-1c')
         }
         
-        self.risks.append(risk)
+        self.app.risks.append(risk)
         
-        idx = len(self.risks)
+        idx = len(self.app.risks)
         self.risk_tree.insert('', 'end', text=str(idx), values=(
             risk['description'][:30] + '...' if len(risk['description']) > 30 else risk['description'],
             risk['zone'],
@@ -644,7 +646,7 @@ class TabManager:
         
         if messagebox.askyesno("Confirmar", "¿Desea eliminar el riesgo seleccionado?"):
             idx = int(self.risk_tree.item(selected[0])['text']) - 1
-            self.risks.pop(idx)
+            self.app.risks.pop(idx)
             self.risk_tree.delete(selected[0])
             
             for i, item in enumerate(self.risk_tree.get_children()):
@@ -738,9 +740,9 @@ class TabManager:
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         
-        self.hrn_calculations.append(calc)
+        self.app.hrn_calculations.append(calc)
         
-        idx = len(self.hrn_calculations)
+        idx = len(self.app.hrn_calculations)
         self.hrn_tree.insert('', 'end', text=str(idx), values=(
             description[:40] + '...' if len(description) > 40 else description,
             f"{calc['hrn']:.2f}",
@@ -772,7 +774,7 @@ class TabManager:
         
         if messagebox.askyesno("Confirmar", "¿Desea eliminar el cálculo seleccionado?"):
             idx = int(self.hrn_tree.item(selected[0])['text']) - 1
-            self.hrn_calculations.pop(idx)
+            self.app.hrn_calculations.pop(idx)
             self.hrn_tree.delete(selected[0])
             
             for i, item in enumerate(self.hrn_tree.get_children()):
@@ -780,14 +782,14 @@ class TabManager:
 
     def update_analysis(self):
         """Actualizar análisis y gráficos"""
-        if not self.risks and not self.hrn_calculations:
+        if not self.app.risks and not self.app.hrn_calculations:
             messagebox.showinfo("Información", "No hay datos para analizar")
             return
         
         self.fig.clear()
-        
-        has_iso_risks = len(self.risks) > 0
-        has_hrn_calcs = len(self.hrn_calculations) > 0
+
+        has_iso_risks = len(self.app.risks) > 0
+        has_hrn_calcs = len(self.app.hrn_calculations) > 0
         
         # Determinar número de subplots
         if has_iso_risks and has_hrn_calcs:
@@ -807,9 +809,9 @@ class TabManager:
         
         # Análisis ISO 13849
         if has_iso_risks:
-            total = len(self.risks)
+            total = len(self.app.risks)
             plr_count = {}
-            for risk in self.risks:
+            for risk in self.app.risks:
                 plr = risk['plr']
                 plr_count[plr] = plr_count.get(plr, 0) + 1
             
@@ -835,7 +837,7 @@ class TabManager:
             
             # Gráfico circular - Severidad
             s_count = {}
-            for risk in self.risks:
+            for risk in self.app.risks:
                 s = 'S1' if 'S1' in risk['severity'] else 'S2'
                 s_count[s] = s_count.get(s, 0) + 1
             
@@ -845,14 +847,14 @@ class TabManager:
         
         # Análisis HRN
         if has_hrn_calcs:
-            total_hrn = len(self.hrn_calculations)
+            total_hrn = len(self.app.hrn_calculations)
             hrn_levels = {}
             
             stats_text += f"\n=== Método HRN ===\n"
             stats_text += f"Total de Cálculos: {total_hrn}\n"
             stats_text += "Distribución por Nivel:\n"
             
-            for calc in self.hrn_calculations:
+            for calc in self.app.hrn_calculations:
                 level = calc['level']
                 hrn_levels[level] = hrn_levels.get(level, 0) + 1
             
@@ -896,9 +898,9 @@ class TabManager:
             ax3.grid(axis='y', alpha=0.3)
             
             # Gráfico de valores HRN individuales
-            hrn_values = [calc['hrn'] for calc in self.hrn_calculations]
+            hrn_values = [calc['hrn'] for calc in self.app.hrn_calculations]
             descriptions = [calc['description'][:15] + '...' if len(calc['description']) > 15 
-                          else calc['description'] for calc in self.hrn_calculations]
+                          else calc['description'] for calc in self.app.hrn_calculations]
             
             colors_hrn_bars = []
             for hrn in hrn_values:

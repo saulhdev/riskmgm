@@ -1,6 +1,8 @@
 from tkinter import Menu
 import webbrowser
 from tkinter import messagebox
+import tkinter as tk
+from .tab_manager import TabManager
 
 class MenuManager:
     """Gestor centralizado del menú de la aplicación"""
@@ -40,6 +42,19 @@ class MenuManager:
         webbrowser.open("https://github.com/saulhdev/riskmgm")
     
     def acerca_de(self):
-        """Mostrar información acerca de la aplicación"""
-        messagebox.showinfo("Acerca de", "Risk Management\nVersión 1.0")
+        """Mostrar información acerca de la aplicación en un diálogo con el contenido del tab 'Acerca de'"""
+        about_win = tk.Toplevel(self.root)
+        about_win.title("Acerca de")
+        about_win.transient(self.root)
+        about_win.grab_set()
+        about_win.geometry("640x480")
+
+        # Renderizar el mismo contenido del tab "Acerca de" dentro del diálogo
+        TabManager.render_about(about_win)
+
+        # Centrar el diálogo respecto a la ventana principal
+        about_win.update_idletasks()
+        x = self.root.winfo_x() + (self.root.winfo_width() - about_win.winfo_width()) // 2
+        y = self.root.winfo_y() + (self.root.winfo_height() - about_win.winfo_height()) // 2
+        about_win.geometry(f"+{x}+{y}")
 
