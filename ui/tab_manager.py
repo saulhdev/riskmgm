@@ -350,7 +350,13 @@ class TabManager:
         """Pestaña de análisis y gráficos"""
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="Análisis y Gráficos")
-        
+
+        # Nuevo toolbar superior con el botón de actualizar
+        toolbar = ttk.Frame(frame)
+        toolbar.pack(fill='x', padx=10, pady=(10, 0))
+        ttk.Button(toolbar, text="Actualizar Análisis",
+                   command=self.update_analysis).pack(side='left')
+
         stats_frame = ttk.LabelFrame(frame, text="Estadísticas", padding=10)
         stats_frame.pack(fill='x', padx=10, pady=10)
         
@@ -364,10 +370,6 @@ class TabManager:
         self.fig = Figure(figsize=(12, 5))
         self.canvas = FigureCanvasTkAgg(self.fig, master=graph_frame)
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
-        
-        # Botón actualizar gráficos
-        ttk.Button(frame, text="Actualizar Análisis", 
-                   command=self.update_analysis).pack(pady=10)
     
     def create_about_tab(self):
         """Pestaña de información del sistema"""
@@ -927,7 +929,6 @@ class TabManager:
         self.stats_label.config(text=stats_text)
         self.fig.tight_layout()
         self.canvas.draw()
-    
-    
-    
-    
+
+
+
