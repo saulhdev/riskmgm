@@ -17,33 +17,16 @@ import base64
 import webbrowser
 
 import ttkbootstrap
+from core.menu_manager import MenuManager
 
 class RiskAnalysisISO13849:
     def __init__(self, root):
         self.root = root
         self.root.title("Análisis de Riesgo ISO 13849-1")
         self.root.geometry("1200x800")
-        menubar = Menu(root)
         
-        # Menú Archivo
-        archivo_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Archivo", menu=archivo_menu)
-        archivo_menu.add_command(label="Abrir", command=self.load_project)
-        archivo_menu.add_command(label="Guardar", command=self.save_project)
-        archivo_menu.add_separator()
-        archivo_menu.add_command(label="Cerrar", command=self.close_app)
-        
-        # Menú Procesar
-        procesar_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Procesar", menu=procesar_menu)
-        procesar_menu.add_command(label="Generar PDF", command=self.generate_pdf)
-
-        # Menú Ayuda
-        ayuda_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Ayuda", menu=ayuda_menu)
-        ayuda_menu.add_command(label="Código Fuente", command=self.codigo_fuente)
-        ayuda_menu.add_command(label="Acerca de...", command=self.acerca_de)
-        root.config(menu=menubar)
+        # Crear menú
+        MenuManager(root, self)
         
         self.machine_data = {}
         self.risks = []
@@ -59,11 +42,6 @@ class RiskAnalysisISO13849:
         self.create_analysis_tab()
         self.create_report_tab()
         self.create_about_tab()
-    def codigo_fuente(self):
-        webbrowser.open("https://github.com/saulhdev/riskmgm")
-    
-    def acerca_de(self):
-        messagebox.showinfo("Acerca de", "Risk Management\nVersión 1.0")
 
     def close_app(self):
         """Cerrar la aplicación"""
@@ -1232,6 +1210,28 @@ class RiskAnalysisISO13849:
                 
                 # Detalle de cálculos HRN
                 story.append(Paragraph("Detalle de Cálculos HRN:", styles['Heading3']))
+                
+                for i, calc in enumerate(self.hrn_calculations, 1):
+                    story.append(Paragraph(f"<b>{i}. {calc['description']}</b>", styles['Normal']))
+                    story.append(Paragraph(f"LO ({calc['lo']}): {calc['lo_desc']}", styles['Normal']))
+                    story.append(Paragraph(f"FE ({calc['fe']}): {calc['fe_desc']}", styles['Normal']))
+                    story.append(Paragraph(f"DPH ({calc['dph']}): {calc['dph_desc']}", styles['Normal']))
+                    story.append(Paragraph(f"NP ({calc['np']}): {calc['np_desc']}", styles['Normal']))
+                    story.append(Paragraph(f"<b>HRN = {calc['hrn']:.2f} → {calc['level']}</b>", styles['Normal']))
+                    story.append(Spacer(1, 0.15*inch))
+
+            # Gráficos
+            if self.risks:
+                self.update_analysis()
+                
+                # Guardar gráfico como imagen
+                buf = io.BytesIO()
+                self.fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
+                buf.seek(0)
+                
+                story.append(PageBreak())
+                story.append(Paragraph("ANÁLISIS GRÁFICO", heading_style))
+                
                 
                 for i, calc in enumerate(self.hrn_calculations, 1):
                     story.append(Paragraph(f"<b>{i}. {calc['description']}</b>", styles['Normal']))
