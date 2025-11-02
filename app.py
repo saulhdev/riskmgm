@@ -1,21 +1,20 @@
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-import matplotlib.pyplot as plt
+from tkinter import Menu, ttk, messagebox, filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import json
 from datetime import datetime
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_CENTER
 import io
 from PIL import Image as PILImage, ImageTk
-import shutil
 import os
 import base64
+import webbrowser
 
 import ttkbootstrap
 
@@ -24,6 +23,27 @@ class RiskAnalysisISO13849:
         self.root = root
         self.root.title("Análisis de Riesgo ISO 13849-1")
         self.root.geometry("1200x800")
+        menubar = Menu(root)
+        
+        # Menú Archivo
+        archivo_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Archivo", menu=archivo_menu)
+        archivo_menu.add_command(label="Abrir", command=self.load_project)
+        archivo_menu.add_command(label="Guardar", command=self.save_project)
+        archivo_menu.add_separator()
+        archivo_menu.add_command(label="Cerrar", command=self.close_app)
+        
+        # Menú Procesar
+        procesar_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Procesar", menu=procesar_menu)
+        procesar_menu.add_command(label="Generar PDF", command=self.generate_pdf)
+
+        # Menú Ayuda
+        ayuda_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Ayuda", menu=ayuda_menu)
+        ayuda_menu.add_command(label="Código Fuente", command=self.codigo_fuente)
+        ayuda_menu.add_command(label="Acerca de...", command=self.acerca_de)
+        root.config(menu=menubar)
         
         self.machine_data = {}
         self.risks = []
@@ -39,7 +59,17 @@ class RiskAnalysisISO13849:
         self.create_analysis_tab()
         self.create_report_tab()
         self.create_about_tab()
-        
+    def codigo_fuente(self):
+        webbrowser.open("https://github.com/saulhdev/riskmgm")
+    
+    def acerca_de(self):
+        messagebox.showinfo("Acerca de", "Risk Management\nVersión 1.0")
+
+    def close_app(self):
+        """Cerrar la aplicación"""
+        if messagebox.askokcancel("Salir", "¿Está seguro que desea salir?"):
+            self.root.destroy()            
+
     def create_machine_tab(self):
         """Pestaña de datos de la máquina"""
         frame = ttk.Frame(self.notebook)
