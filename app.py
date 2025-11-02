@@ -57,6 +57,10 @@ class RiskAnalysisISO13849:
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
         
+        # Create left frame for data fields
+        left_frame = ttk.Frame(scrollable_frame)
+        left_frame.pack(side='left', fill='both', expand=True, padx=(0, 10))
+        
         fields = [
             ("Tipo de Máquina:", "machine_type"),
             ("Modelo:", "model"),
@@ -70,31 +74,35 @@ class RiskAnalysisISO13849:
         self.machine_entries = {}
         
         for i, (label, key) in enumerate(fields):
-            ttk.Label(scrollable_frame, text=label, font=('Arial', 10, 'bold')).grid(
+            ttk.Label(left_frame, text=label, font=('Arial', 10, 'bold')).grid(
                 row=i, column=0, sticky='w', padx=20, pady=10
             )
-            entry = ttk.Entry(scrollable_frame, width=50)
+            entry = ttk.Entry(left_frame, width=50)
             entry.grid(row=i, column=1, padx=20, pady=10)
             self.machine_entries[key] = entry
         
-        ttk.Label(scrollable_frame, text="Descripción:", font=('Arial', 10, 'bold')).grid(
+        ttk.Label(left_frame, text="Descripción:", font=('Arial', 10, 'bold')).grid(
             row=len(fields), column=0, sticky='nw', padx=20, pady=10
         )
-        self.description_text = tk.Text(scrollable_frame, width=50, height=5)
+        self.description_text = tk.Text(left_frame, width=50, height=5)
         self.description_text.grid(row=len(fields), column=1, padx=20, pady=10)
         
-        ttk.Label(scrollable_frame, text="Fotografías:", font=('Arial', 10, 'bold')).grid(
-            row=len(fields)+1, column=0, sticky='nw', padx=20, pady=10
+        ttk.Button(left_frame, text="Guardar Datos", command=self.save_machine_data).grid(
+            row=len(fields)+1, column=1, pady=20
         )
         
-        photo_frame = ttk.Frame(scrollable_frame)
-        photo_frame.grid(row=len(fields)+1, column=1, padx=20, pady=10, sticky='w')
+        # Create right frame for photos
+        right_frame = ttk.Frame(scrollable_frame)
+        right_frame.pack(side='right', fill='both', expand=True, padx=(10, 0))
+        
+        photo_frame = ttk.Frame(right_frame)
+        photo_frame.pack(pady=10)
         
         ttk.Button(photo_frame, text="📷 Añadir Foto", command=self.add_photo).pack(side='left', padx=5)
         ttk.Button(photo_frame, text="🗑️ Eliminar Foto", style='danger', command=self.remove_photo).pack(side='left', padx=5)
                 
-        self.photos_display_frame = ttk.LabelFrame(scrollable_frame, text="Fotos de la Máquina", padding=10)
-        self.photos_display_frame.grid(row=len(fields)+2, column=0, columnspan=2, padx=20, pady=10, sticky='ew')
+        self.photos_display_frame = ttk.LabelFrame(right_frame, text="Fotos de la Máquina", padding=10)
+        self.photos_display_frame.pack(fill='both', expand=True, pady=10)
         
         self.photos_canvas = tk.Canvas(self.photos_display_frame, height=150, bg='white')
         self.photos_scrollbar = ttk.Scrollbar(self.photos_display_frame, orient="horizontal", command=self.photos_canvas.xview)
@@ -106,11 +114,7 @@ class RiskAnalysisISO13849:
         self.photos_canvas.pack(fill='x', expand=True)
         self.photos_scrollbar.pack(fill='x')
         
-        self.photo_labels = [] 
-        
-        ttk.Button(scrollable_frame, text="Guardar Datos", command=self.save_machine_data).grid(
-            row=len(fields)+3, column=1, pady=20
-        )
+        self.photo_labels = []
         
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
@@ -128,8 +132,8 @@ class RiskAnalysisISO13849:
         ttk.Label(left_frame, text="Descripción del Peligro:").grid(row=0, column=0, sticky='w', pady=5)
         self.risk_desc = ttk.Entry(left_frame, width=40)
         self.risk_desc.grid(row=0, column=1, pady=5, padx=5)
-        
-        ttk.Label(left_frame, text="Zona/Componente:").grid(row=1, column=0, sticky='w', pady=5)
+
+        ttk.Label(left_frame, text="Descripción del Riesgo:").grid(row=1, column=0, sticky='w', pady=5)
         self.risk_zone = ttk.Entry(left_frame, width=40)
         self.risk_zone.grid(row=1, column=1, pady=5, padx=5)
         
