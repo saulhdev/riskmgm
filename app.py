@@ -16,6 +16,7 @@ from PIL import Image as PILImage, ImageTk
 import shutil
 import os
 import base64
+
 import ttkbootstrap
 
 class RiskAnalysisISO13849:
@@ -27,12 +28,14 @@ class RiskAnalysisISO13849:
         self.machine_data = {}
         self.risks = []
         self.machine_photos = []
+        self.hrn_calculations = []
         
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(fill='both', expand=True, padx=10, pady=10)
         
         self.create_machine_tab()
-        self.create_risk_tab()
+        self.create_risk_tab()        
+        self.create_hrn_tab()
         self.create_analysis_tab()
         self.create_report_tab()
         self.create_about_tab()
@@ -159,28 +162,23 @@ class RiskAnalysisISO13849:
         self.plr_label = ttk.Label(left_frame, text="Seleccione S, F y P", foreground='blue')
         self.plr_label.grid(row=5, column=1, sticky='w', pady=5, padx=5)
         
-        # Actualizar PLr cuando cambien los valores
         self.severity.bind('<<ComboboxSelected>>', self.calculate_plr)
         self.frequency.bind('<<ComboboxSelected>>', self.calculate_plr)
         self.avoidance.bind('<<ComboboxSelected>>', self.calculate_plr)
         
-        # Medidas de control
         ttk.Label(left_frame, text="Medidas de Control:").grid(row=6, column=0, sticky='nw', pady=5)
         self.control_measures = tk.Text(left_frame, width=40, height=4)
         self.control_measures.grid(row=6, column=1, pady=5, padx=5)
         
-        # Botones
         btn_frame = ttk.Frame(left_frame)
         btn_frame.grid(row=7, column=0, columnspan=2, pady=20)
         
         ttk.Button(btn_frame, text="Añadir Riesgo", command=self.add_risk).pack(side='left', padx=5)
         ttk.Button(btn_frame, text="Limpiar", command=self.clear_risk_form).pack(side='left', padx=5)
         
-        # Frame derecho - Lista de riesgos
         right_frame = ttk.LabelFrame(frame, text="Riesgos Identificados", padding=10)
         right_frame.pack(side='right', fill='both', expand=True, padx=5, pady=5)
         
-        # Treeview para mostrar riesgos
         columns = ('Descripción', 'Zona', 'S', 'F', 'P', 'PLr')
         self.risk_tree = ttk.Treeview(right_frame, columns=columns, show='tree headings', height=20)
         
@@ -202,10 +200,319 @@ class RiskAnalysisISO13849:
         self.risk_tree.pack(side='left', fill='both', expand=True)
         scrollbar.pack(side='right', fill='y')
         
-        # Botón eliminar
         ttk.Button(right_frame, text="Eliminar Seleccionado", 
                    command=self.delete_risk).pack(pady=5)
+    
+    def create_hrn_tab(self):
+        """Pestaña de calculadora HRN"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="Calculadora HRN")
         
+        # Frame principal
+        main_frame = ttk.Frame(frame)
+        main_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        # Frame izquierdo - Calculadora
+        left_frame = ttk.LabelFrame(main_frame, text="Calcular HRN (Hazard Rating Number)", padding=15)
+        left_frame.pack(side='left', fill='both', expand=True, padx=5, pady=5)
+        
+        # Título y fórmula
+        ttk.Label(left_frame, text="HRN = LO × FE × DPH × NP", 
+                 font=('Arial', 14, 'bold'), foreground='#003366').grid(
+                     row=0, column=0, columnspan=2, pady=15)
+        
+        # Descripción del peligro
+        ttk.Label(left_frame, text="Descripción del Peligro:").grid(
+            row=1, column=0, sticky='w', pady=10, padx=5)
+        self.hrn_description = ttk.Entry(left_frame, width=50)
+        self.hrn_description.grid(row=1, column=1, pady=10, padx=5)
+        
+        # LO - Probabilidad de ocurrencia
+        ttk.Label(left_frame, text="LO - Probabilidad de Ocurrencia:", 
+                 font=('Arial', 10, 'bold')).grid(row=2, column=0, sticky='w', pady=10, padx=5)
+        
+        self.lo_values = [
+            (0.033, "Casi Imposible"),
+            (1, "Altamente improbable"),
+            (1.5, "Improbable"),
+            (2, "Posible"),
+            (5, "Hay Posibilidades"),
+            (8, "Probable"),
+            (10, "Muy Probable"),
+            (15, "Cierto")
+        ]
+        
+        self.lo_var = tk.StringVar()
+        lo_combo = ttk.Combobox(left_frame, textvariable=self.lo_var, width=47, state='readonly')
+        lo_combo['values'] = [f"{val} - {desc}" for val, desc in self.lo_values]
+        lo_combo.grid(row=2, column=1, pady=10, padx=5)
+        lo_combo.bind('<<ComboboxSelected>>', self.calculate_hrn)
+        
+        # FE - Frecuencia de exposición
+        ttk.Label(left_frame, text="FE - Frecuencia de Exposición:", 
+                 font=('Arial', 10, 'bold')).grid(row=3, column=0, sticky='w', pady=10, padx=5)
+        
+        self.fe_values = [
+            (0.5, "Anualmente"),
+            (1, "Mensualmente"),
+            (1.5, "Semanalmente"),
+            (2.5, "Diariamente"),
+            (4, "Cada Hora"),
+            (5, "Constantemente")
+        ]
+        
+        self.fe_var = tk.StringVar()
+        fe_combo = ttk.Combobox(left_frame, textvariable=self.fe_var, width=47, state='readonly')
+        fe_combo['values'] = [f"{val} - {desc}" for val, desc in self.fe_values]
+        fe_combo.grid(row=3, column=1, pady=10, padx=5)
+        fe_combo.bind('<<ComboboxSelected>>', self.calculate_hrn)
+        
+        # DPH - Grado de posible daño
+        ttk.Label(left_frame, text="DPH - Grado de Posible Daño:", 
+                 font=('Arial', 10, 'bold')).grid(row=4, column=0, sticky='w', pady=10, padx=5)
+        
+        self.dph_values = [
+            (0.1, "Rasguño/Moretón"),
+            (0.5, "Quemadura/Enfermedad de corto plazo"),
+            (1, "Rotura - Hueso menor o Enfermedad menor (temporal)"),
+            (2, "Rotura - Hueso mayor o Enfermedad menor (permanente)"),
+            (4, "Pérdida de 1 miembro o Enfermedad grave (permanente)"),
+            (8, "Pérdida de 2 miembros o Enfermedad grave (permanente)"),
+            (15, "Fatalidad")
+        ]
+        
+        self.dph_var = tk.StringVar()
+        dph_combo = ttk.Combobox(left_frame, textvariable=self.dph_var, width=47, state='readonly')
+        dph_combo['values'] = [f"{val} - {desc}" for val, desc in self.dph_values]
+        dph_combo.grid(row=4, column=1, pady=10, padx=5)
+        dph_combo.bind('<<ComboboxSelected>>', self.calculate_hrn)
+        
+        # NP - Número de personas en riesgo
+        ttk.Label(left_frame, text="NP - Número de Personas en Riesgo:", 
+                 font=('Arial', 10, 'bold')).grid(row=5, column=0, sticky='w', pady=10, padx=5)
+        
+        self.np_values = [
+            (1, "1-2 personas"),
+            (2, "3-7 personas"),
+            (4, "8-15 personas"),
+            (8, "16-50 personas"),
+            (12, "Más de 50 personas")
+        ]
+        
+        self.np_var = tk.StringVar()
+        np_combo = ttk.Combobox(left_frame, textvariable=self.np_var, width=47, state='readonly')
+        np_combo['values'] = [f"{val} - {desc}" for val, desc in self.np_values]
+        np_combo.grid(row=5, column=1, pady=10, padx=5)
+        np_combo.bind('<<ComboboxSelected>>', self.calculate_hrn)
+        
+        # Resultado HRN
+        result_frame = ttk.Frame(left_frame, relief='solid', borderwidth=2)
+        result_frame.grid(row=6, column=0, columnspan=2, pady=20, padx=5, sticky='ew')
+        
+        ttk.Label(result_frame, text="Resultado:", font=('Arial', 12, 'bold')).pack(pady=5)
+        
+        self.hrn_result_label = ttk.Label(result_frame, text="HRN = ?", 
+                                         font=('Arial', 18, 'bold'), foreground='blue')
+        self.hrn_result_label.pack(pady=5)
+        
+        self.hrn_level_label = ttk.Label(result_frame, text="Seleccione todos los valores", 
+                                        font=('Arial', 11), foreground='gray')
+        self.hrn_level_label.pack(pady=5)
+        
+        # Botones
+        btn_frame = ttk.Frame(left_frame)
+        btn_frame.grid(row=7, column=0, columnspan=2, pady=15)
+        
+        ttk.Button(btn_frame, text="💾 Guardar Cálculo", 
+                  command=self.save_hrn_calculation).pack(side='left', padx=5)
+        ttk.Button(btn_frame, text="🔄 Limpiar", 
+                  command=self.clear_hrn_form).pack(side='left', padx=5)
+        
+        # Frame derecho - Historial y Referencias
+        right_frame = ttk.Frame(main_frame)
+        right_frame.pack(side='right', fill='both', expand=True, padx=5, pady=5)
+        
+        # Historial de cálculos
+        history_frame = ttk.LabelFrame(right_frame, text="Historial de Cálculos", padding=10)
+        history_frame.pack(fill='both', expand=True, pady=(0, 10))
+        
+        columns = ('Descripción', 'HRN', 'Nivel')
+        self.hrn_tree = ttk.Treeview(history_frame, columns=columns, show='tree headings', height=10)
+        
+        self.hrn_tree.heading('#0', text='#')
+        self.hrn_tree.column('#0', width=30)
+        self.hrn_tree.heading('Descripción', text='Descripción')
+        self.hrn_tree.column('Descripción', width=250)
+        self.hrn_tree.heading('HRN', text='HRN')
+        self.hrn_tree.column('HRN', width=80)
+        self.hrn_tree.heading('Nivel', text='Nivel de Riesgo')
+        self.hrn_tree.column('Nivel', width=150)
+        
+        hrn_scrollbar = ttk.Scrollbar(history_frame, orient="vertical", command=self.hrn_tree.yview)
+        self.hrn_tree.configure(yscrollcommand=hrn_scrollbar.set)
+        
+        self.hrn_tree.pack(side='left', fill='both', expand=True)
+        hrn_scrollbar.pack(side='right', fill='y')
+        
+        ttk.Button(history_frame, text="🗑️ Eliminar Seleccionado", 
+                  command=self.delete_hrn_calculation).pack(pady=5)
+        
+        # Tabla de referencia de niveles
+        reference_frame = ttk.LabelFrame(right_frame, text="Tabla de Niveles de Riesgo", padding=10)
+        reference_frame.pack(fill='x')
+        
+        reference_text = """
+0-1     → Riesgo Despreciable
+2-5     → Riesgo Muy Bajo
+6-10    → Riesgo Bajo
+11-50   → Riesgo Significante
+51-100  → Riesgo Alto
+101-500 → Riesgo Muy Alto
+501-1000 → Riesgo Extremo
+>1000   → Riesgo Inaceptable
+        """
+        
+        ref_label = ttk.Label(reference_frame, text=reference_text, 
+                             font=('Courier', 9), justify='left')
+        ref_label.pack()
+    
+    def calculate_hrn(self, event=None):
+        """Calcular HRN"""
+        try:
+            # Obtener valores seleccionados
+            lo_text = self.lo_var.get()
+            fe_text = self.fe_var.get()
+            dph_text = self.dph_var.get()
+            np_text = self.np_var.get()
+            
+            if not all([lo_text, fe_text, dph_text, np_text]):
+                return
+            
+            # Extraer valores numéricos
+            lo = float(lo_text.split(' - ')[0])
+            fe = float(fe_text.split(' - ')[0])
+            dph = float(dph_text.split(' - ')[0])
+            np = float(np_text.split(' - ')[0])
+            
+            # Calcular HRN
+            hrn = lo * fe * dph * np
+            
+            # Determinar nivel de riesgo
+            if hrn <= 1:
+                level = "Riesgo Despreciable"
+                color = '#90EE90'  # Verde claro
+            elif hrn <= 5:
+                level = "Riesgo Muy Bajo"
+                color = '#98FB98'  # Verde pálido
+            elif hrn <= 10:
+                level = "Riesgo Bajo"
+                color = '#FFFF99'  # Amarillo claro
+            elif hrn <= 50:
+                level = "Riesgo Significante"
+                color = '#FFD700'  # Dorado
+            elif hrn <= 100:
+                level = "Riesgo Alto"
+                color = '#FFA500'  # Naranja
+            elif hrn <= 500:
+                level = "Riesgo Muy Alto"
+                color = '#FF6347'  # Rojo tomate
+            elif hrn <= 1000:
+                level = "Riesgo Extremo"
+                color = '#DC143C'  # Crimson
+            else:
+                level = "Riesgo Inaceptable"
+                color = '#8B0000'  # Rojo oscuro
+            
+            # Mostrar resultado
+            self.hrn_result_label.config(text=f"HRN = {hrn:.2f}", foreground=color)
+            self.hrn_level_label.config(text=level, foreground=color, font=('Arial', 12, 'bold'))
+            
+            # Guardar valores actuales para uso posterior
+            self.current_hrn = {
+                'hrn': hrn,
+                'level': level,
+                'lo': lo,
+                'lo_desc': lo_text.split(' - ')[1],
+                'fe': fe,
+                'fe_desc': fe_text.split(' - ')[1],
+                'dph': dph,
+                'dph_desc': dph_text.split(' - ')[1],
+                'np': np,
+                'np_desc': np_text.split(' - ')[1]
+            }
+            
+        except Exception as e:
+            self.hrn_result_label.config(text="Error en cálculo", foreground='red')
+    
+    def save_hrn_calculation(self):
+        """Guardar cálculo HRN en el historial"""
+        if not hasattr(self, 'current_hrn'):
+            messagebox.showwarning("Advertencia", "Primero calcule el HRN")
+            return
+        
+        description = self.hrn_description.get()
+        if not description:
+            messagebox.showwarning("Advertencia", "Ingrese una descripción del peligro")
+            return
+        
+        # Añadir al historial
+        calc = {
+            'description': description,
+            'hrn': self.current_hrn['hrn'],
+            'level': self.current_hrn['level'],
+            'lo': self.current_hrn['lo'],
+            'lo_desc': self.current_hrn['lo_desc'],
+            'fe': self.current_hrn['fe'],
+            'fe_desc': self.current_hrn['fe_desc'],
+            'dph': self.current_hrn['dph'],
+            'dph_desc': self.current_hrn['dph_desc'],
+            'np': self.current_hrn['np'],
+            'np_desc': self.current_hrn['np_desc'],
+            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        self.hrn_calculations.append(calc)
+        
+        # Añadir al treeview
+        idx = len(self.hrn_calculations)
+        self.hrn_tree.insert('', 'end', text=str(idx), values=(
+            description[:40] + '...' if len(description) > 40 else description,
+            f"{calc['hrn']:.2f}",
+            calc['level']
+        ))
+        
+        messagebox.showinfo("Éxito", "Cálculo HRN guardado en el historial")
+        self.clear_hrn_form()
+    
+    def clear_hrn_form(self):
+        """Limpiar formulario HRN"""
+        self.hrn_description.delete(0, 'end')
+        self.lo_var.set('')
+        self.fe_var.set('')
+        self.dph_var.set('')
+        self.np_var.set('')
+        self.hrn_result_label.config(text="HRN = ?", foreground='blue')
+        self.hrn_level_label.config(text="Seleccione todos los valores", 
+                                   foreground='gray', font=('Arial', 11))
+        if hasattr(self, 'current_hrn'):
+            delattr(self, 'current_hrn')
+    
+    def delete_hrn_calculation(self):
+        """Eliminar cálculo HRN seleccionado"""
+        selected = self.hrn_tree.selection()
+        if not selected:
+            messagebox.showwarning("Advertencia", "Seleccione un cálculo para eliminar")
+            return
+        
+        if messagebox.askyesno("Confirmar", "¿Desea eliminar el cálculo seleccionado?"):
+            idx = int(self.hrn_tree.item(selected[0])['text']) - 1
+            self.hrn_calculations.pop(idx)
+            self.hrn_tree.delete(selected[0])
+            
+            # Reindexar
+            for i, item in enumerate(self.hrn_tree.get_children()):
+                self.hrn_tree.item(item, text=str(i+1))
+
     def create_analysis_tab(self):
         """Pestaña de análisis y gráficos"""
         frame = ttk.Frame(self.notebook)
@@ -604,53 +911,154 @@ class RiskAnalysisISO13849:
     
     def update_analysis(self):
         """Actualizar análisis y gráficos"""
-        if not self.risks:
-            messagebox.showinfo("Información", "No hay riesgos para analizar")
+        if not self.risks and not self.hrn_calculations:
+            messagebox.showinfo("Información", "No hay datos para analizar")
             return
         
-        # Calcular estadísticas
-        total = len(self.risks)
-        plr_count = {}
-        for risk in self.risks:
-            plr = risk['plr']
-            plr_count[plr] = plr_count.get(plr, 0) + 1
-        
-        stats_text = f"Total de Riesgos: {total}\n"
-        stats_text += "Distribución por PLr:\n"
-        for plr in sorted(plr_count.keys()):
-            percentage = (plr_count[plr] / total) * 100
-            stats_text += f"  PLr {plr}: {plr_count[plr]} ({percentage:.1f}%)\n"
-        
-        self.stats_label.config(text=stats_text)
-        
-        # Crear gráficos
+        # Limpiar figura
         self.fig.clear()
         
-        # Gráfico de barras - Distribución PLr
-        ax1 = self.fig.add_subplot(121)
-        plr_labels = sorted(plr_count.keys())
-        plr_values = [plr_count[plr] for plr in plr_labels]
-        colors_map = {'A': '#90EE90', 'B': '#FFFF99', 'C': '#FFD700', 
-                     'D': '#FFA500', 'E': '#FF6347'}
-        bar_colors = [colors_map.get(plr, 'gray') for plr in plr_labels]
+        has_iso_risks = len(self.risks) > 0
+        has_hrn_calcs = len(self.hrn_calculations) > 0
         
-        ax1.bar(plr_labels, plr_values, color=bar_colors, edgecolor='black')
-        ax1.set_xlabel('Performance Level Requerido')
-        ax1.set_ylabel('Cantidad de Riesgos')
-        ax1.set_title('Distribución de Riesgos por PLr')
-        ax1.grid(axis='y', alpha=0.3)
+        # Determinar número de subplots
+        if has_iso_risks and has_hrn_calcs:
+            # Mostrar ambos análisis
+            ax1 = self.fig.add_subplot(221)
+            ax2 = self.fig.add_subplot(222)
+            ax3 = self.fig.add_subplot(223)
+            ax4 = self.fig.add_subplot(224)
+        elif has_iso_risks:
+            ax1 = self.fig.add_subplot(121)
+            ax2 = self.fig.add_subplot(122)
+        elif has_hrn_calcs:
+            ax3 = self.fig.add_subplot(121)
+            ax4 = self.fig.add_subplot(122)
         
-        # Gráfico circular - Severidad
-        ax2 = self.fig.add_subplot(122)
-        s_count = {}
-        for risk in self.risks:
-            s = 'S1' if 'S1' in risk['severity'] else 'S2'
-            s_count[s] = s_count.get(s, 0) + 1
+        stats_text = ""
         
-        ax2.pie(s_count.values(), labels=s_count.keys(), autopct='%1.1f%%',
-               colors=['#90EE90', '#FF6347'], startangle=90)
-        ax2.set_title('Distribución por Severidad')
+        # Análisis ISO 13849
+        if has_iso_risks:
+            total = len(self.risks)
+            plr_count = {}
+            for risk in self.risks:
+                plr = risk['plr']
+                plr_count[plr] = plr_count.get(plr, 0) + 1
+            
+            stats_text += f"=== ISO 13849-1 ===\n"
+            stats_text += f"Total de Riesgos: {total}\n"
+            stats_text += "Distribución por PLr:\n"
+            for plr in sorted(plr_count.keys()):
+                percentage = (plr_count[plr] / total) * 100
+                stats_text += f"  PLr {plr}: {plr_count[plr]} ({percentage:.1f}%)\n"
+            
+            # Gráfico de barras - Distribución PLr
+            plr_labels = sorted(plr_count.keys())
+            plr_values = [plr_count[plr] for plr in plr_labels]
+            colors_map = {'A': '#90EE90', 'B': '#FFFF99', 'C': '#FFD700', 
+                         'D': '#FFA500', 'E': '#FF6347'}
+            bar_colors = [colors_map.get(plr, 'gray') for plr in plr_labels]
+            
+            ax1.bar(plr_labels, plr_values, color=bar_colors, edgecolor='black')
+            ax1.set_xlabel('Performance Level Requerido')
+            ax1.set_ylabel('Cantidad de Riesgos')
+            ax1.set_title('Distribución de Riesgos por PLr (ISO 13849)')
+            ax1.grid(axis='y', alpha=0.3)
+            
+            # Gráfico circular - Severidad
+            s_count = {}
+            for risk in self.risks:
+                s = 'S1' if 'S1' in risk['severity'] else 'S2'
+                s_count[s] = s_count.get(s, 0) + 1
+            
+            ax2.pie(s_count.values(), labels=s_count.keys(), autopct='%1.1f%%',
+                   colors=['#90EE90', '#FF6347'], startangle=90)
+            ax2.set_title('Distribución por Severidad')
         
+        # Análisis HRN
+        if has_hrn_calcs:
+            total_hrn = len(self.hrn_calculations)
+            hrn_levels = {}
+            
+            stats_text += f"\n=== Método HRN ===\n"
+            stats_text += f"Total de Cálculos: {total_hrn}\n"
+            stats_text += "Distribución por Nivel:\n"
+            
+            for calc in self.hrn_calculations:
+                level = calc['level']
+                hrn_levels[level] = hrn_levels.get(level, 0) + 1
+            
+            for level in hrn_levels:
+                percentage = (hrn_levels[level] / total_hrn) * 100
+                stats_text += f"  {level}: {hrn_levels[level]} ({percentage:.1f}%)\n"
+            
+            # Gráfico de barras - Distribución HRN
+            level_order = [
+                "Riesgo Despreciable",
+                "Riesgo Muy Bajo",
+                "Riesgo Bajo",
+                "Riesgo Significante",
+                "Riesgo Alto",
+                "Riesgo Muy Alto",
+                "Riesgo Extremo",
+                "Riesgo Inaceptable"
+            ]
+            
+            level_colors = {
+                "Riesgo Despreciable": '#90EE90',
+                "Riesgo Muy Bajo": '#98FB98',
+                "Riesgo Bajo": '#FFFF99',
+                "Riesgo Significante": '#FFD700',
+                "Riesgo Alto": '#FFA500',
+                "Riesgo Muy Alto": '#FF6347',
+                "Riesgo Extremo": '#DC143C',
+                "Riesgo Inaceptable": '#8B0000'
+            }
+            
+            present_levels = [level for level in level_order if level in hrn_levels]
+            level_values = [hrn_levels[level] for level in present_levels]
+            bar_colors_hrn = [level_colors[level] for level in present_levels]
+            
+            ax3.bar(range(len(present_levels)), level_values, color=bar_colors_hrn, edgecolor='black')
+            ax3.set_xticks(range(len(present_levels)))
+            ax3.set_xticklabels([l.replace('Riesgo ', '') for l in present_levels], rotation=45, ha='right')
+            ax3.set_xlabel('Nivel de Riesgo')
+            ax3.set_ylabel('Cantidad')
+            ax3.set_title('Distribución de Riesgos HRN')
+            ax3.grid(axis='y', alpha=0.3)
+            
+            # Gráfico de valores HRN individuales
+            hrn_values = [calc['hrn'] for calc in self.hrn_calculations]
+            descriptions = [calc['description'][:15] + '...' if len(calc['description']) > 15 
+                          else calc['description'] for calc in self.hrn_calculations]
+            
+            colors_hrn_bars = []
+            for hrn in hrn_values:
+                if hrn <= 1:
+                    colors_hrn_bars.append('#90EE90')
+                elif hrn <= 5:
+                    colors_hrn_bars.append('#98FB98')
+                elif hrn <= 10:
+                    colors_hrn_bars.append('#FFFF99')
+                elif hrn <= 50:
+                    colors_hrn_bars.append('#FFD700')
+                elif hrn <= 100:
+                    colors_hrn_bars.append('#FFA500')
+                elif hrn <= 500:
+                    colors_hrn_bars.append('#FF6347')
+                elif hrn <= 1000:
+                    colors_hrn_bars.append('#DC143C')
+                else:
+                    colors_hrn_bars.append('#8B0000')
+            
+            ax4.barh(range(len(hrn_values)), hrn_values, color=colors_hrn_bars, edgecolor='black')
+            ax4.set_yticks(range(len(hrn_values)))
+            ax4.set_yticklabels(descriptions)
+            ax4.set_xlabel('Valor HRN')
+            ax4.set_title('Valores HRN Calculados')
+            ax4.grid(axis='x', alpha=0.3)
+        
+        self.stats_label.config(text=stats_text)
         self.fig.tight_layout()
         self.canvas.draw()
     
@@ -784,6 +1192,55 @@ class RiskAnalysisISO13849:
                     story.append(Paragraph(f"Medidas: {risk['control_measures']}", styles['Normal']))
                 story.append(Spacer(1, 0.2*inch))
             
+            # Cálculos HRN si existen
+            if self.hrn_calculations:
+                story.append(PageBreak())
+                story.append(Paragraph("CÁLCULOS HRN (HAZARD RATING NUMBER)", heading_style))
+                
+                hrn_table_data = [['#', 'Descripción', 'LO', 'FE', 'DPH', 'NP', 'HRN', 'Nivel']]
+                
+                for i, calc in enumerate(self.hrn_calculations, 1):
+                    hrn_table_data.append([
+                        str(i),
+                        calc['description'][:30] + '...' if len(calc['description']) > 30 else calc['description'],
+                        str(calc['lo']),
+                        str(calc['fe']),
+                        str(calc['dph']),
+                        str(calc['np']),
+                        f"{calc['hrn']:.2f}",
+                        calc['level']
+                    ])
+                
+                hrn_table = Table(hrn_table_data, colWidths=[0.3*inch, 2*inch, 0.5*inch, 
+                                                             0.5*inch, 0.5*inch, 0.5*inch, 
+                                                             0.7*inch, 1.5*inch])
+                hrn_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#003366')),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), 9),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('FONTSIZE', (0, 1), (-1, -1), 8),
+                ]))
+                
+                story.append(hrn_table)
+                story.append(Spacer(1, 0.3*inch))
+                
+                # Detalle de cálculos HRN
+                story.append(Paragraph("Detalle de Cálculos HRN:", styles['Heading3']))
+                
+                for i, calc in enumerate(self.hrn_calculations, 1):
+                    story.append(Paragraph(f"<b>{i}. {calc['description']}</b>", styles['Normal']))
+                    story.append(Paragraph(f"LO ({calc['lo']}): {calc['lo_desc']}", styles['Normal']))
+                    story.append(Paragraph(f"FE ({calc['fe']}): {calc['fe_desc']}", styles['Normal']))
+                    story.append(Paragraph(f"DPH ({calc['dph']}): {calc['dph_desc']}", styles['Normal']))
+                    story.append(Paragraph(f"NP ({calc['np']}): {calc['np_desc']}", styles['Normal']))
+                    story.append(Paragraph(f"<b>HRN = {calc['hrn']:.2f} → {calc['level']}</b>", styles['Normal']))
+                    story.append(Spacer(1, 0.15*inch))
+
             # Gráficos
             if self.risks:
                 self.update_analysis()
@@ -860,7 +1317,8 @@ class RiskAnalysisISO13849:
             project_data = {
                 'machine_data': self.machine_data,
                 'risks': self.risks,
-                'photos': self.machine_photos
+                'photos': self.machine_photos,
+                'hrn_calculations': self.hrn_calculations
             }
             
             with open(filename, 'w', encoding='utf-8') as f:
@@ -892,10 +1350,10 @@ class RiskAnalysisISO13849:
             self.machine_photos = project_data.get('photos', [])
             self.update_photos_display()
             
-            # Cargar riesgos
+            # Cargar riesgos ISO 13849
             self.risks = project_data.get('risks', [])
             
-            # Actualizar treeview
+            # Actualizar treeview de riesgos
             for item in self.risk_tree.get_children():
                 self.risk_tree.delete(item)
             
@@ -907,6 +1365,20 @@ class RiskAnalysisISO13849:
                     risk['frequency'].split('-')[0].strip(),
                     risk['avoidance'].split('-')[0].strip(),
                     risk['plr']
+                ))
+            
+            # Cargar cálculos HRN
+            self.hrn_calculations = project_data.get('hrn_calculations', [])
+            
+            # Actualizar treeview de HRN
+            for item in self.hrn_tree.get_children():
+                self.hrn_tree.delete(item)
+            
+            for idx, calc in enumerate(self.hrn_calculations, 1):
+                self.hrn_tree.insert('', 'end', text=str(idx), values=(
+                    calc['description'][:40] + '...' if len(calc['description']) > 40 else calc['description'],
+                    f"{calc['hrn']:.2f}",
+                    calc['level']
                 ))
             
             messagebox.showinfo("Éxito", "Proyecto cargado correctamente")
