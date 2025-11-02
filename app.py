@@ -208,26 +208,21 @@ class RiskAnalysisISO13849:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="Calculadora HRN")
         
-        # Frame principal
         main_frame = ttk.Frame(frame)
         main_frame.pack(fill='both', expand=True, padx=10, pady=10)
         
-        # Frame izquierdo - Calculadora
         left_frame = ttk.LabelFrame(main_frame, text="Calcular HRN (Hazard Rating Number)", padding=15)
         left_frame.pack(side='left', fill='both', expand=True, padx=5, pady=5)
         
-        # Título y fórmula
         ttk.Label(left_frame, text="HRN = LO × FE × DPH × NP", 
                  font=('Arial', 14, 'bold'), foreground='#003366').grid(
                      row=0, column=0, columnspan=2, pady=15)
         
-        # Descripción del peligro
         ttk.Label(left_frame, text="Descripción del Peligro:").grid(
             row=1, column=0, sticky='w', pady=10, padx=5)
         self.hrn_description = ttk.Entry(left_frame, width=50)
         self.hrn_description.grid(row=1, column=1, pady=10, padx=5)
         
-        # LO - Probabilidad de ocurrencia
         ttk.Label(left_frame, text="LO - Probabilidad de Ocurrencia:", 
                  font=('Arial', 10, 'bold')).grid(row=2, column=0, sticky='w', pady=10, padx=5)
         
@@ -248,7 +243,6 @@ class RiskAnalysisISO13849:
         lo_combo.grid(row=2, column=1, pady=10, padx=5)
         lo_combo.bind('<<ComboboxSelected>>', self.calculate_hrn)
         
-        # FE - Frecuencia de exposición
         ttk.Label(left_frame, text="FE - Frecuencia de Exposición:", 
                  font=('Arial', 10, 'bold')).grid(row=3, column=0, sticky='w', pady=10, padx=5)
         
@@ -267,7 +261,6 @@ class RiskAnalysisISO13849:
         fe_combo.grid(row=3, column=1, pady=10, padx=5)
         fe_combo.bind('<<ComboboxSelected>>', self.calculate_hrn)
         
-        # DPH - Grado de posible daño
         ttk.Label(left_frame, text="DPH - Grado de Posible Daño:", 
                  font=('Arial', 10, 'bold')).grid(row=4, column=0, sticky='w', pady=10, padx=5)
         
@@ -287,7 +280,6 @@ class RiskAnalysisISO13849:
         dph_combo.grid(row=4, column=1, pady=10, padx=5)
         dph_combo.bind('<<ComboboxSelected>>', self.calculate_hrn)
         
-        # NP - Número de personas en riesgo
         ttk.Label(left_frame, text="NP - Número de Personas en Riesgo:", 
                  font=('Arial', 10, 'bold')).grid(row=5, column=0, sticky='w', pady=10, padx=5)
         
@@ -305,7 +297,6 @@ class RiskAnalysisISO13849:
         np_combo.grid(row=5, column=1, pady=10, padx=5)
         np_combo.bind('<<ComboboxSelected>>', self.calculate_hrn)
         
-        # Resultado HRN
         result_frame = ttk.Frame(left_frame, relief='solid', borderwidth=2)
         result_frame.grid(row=6, column=0, columnspan=2, pady=20, padx=5, sticky='ew')
         
@@ -319,7 +310,6 @@ class RiskAnalysisISO13849:
                                         font=('Arial', 11), foreground='gray')
         self.hrn_level_label.pack(pady=5)
         
-        # Botones
         btn_frame = ttk.Frame(left_frame)
         btn_frame.grid(row=7, column=0, columnspan=2, pady=15)
         
@@ -328,11 +318,9 @@ class RiskAnalysisISO13849:
         ttk.Button(btn_frame, text="🔄 Limpiar", 
                   command=self.clear_hrn_form).pack(side='left', padx=5)
         
-        # Frame derecho - Historial y Referencias
         right_frame = ttk.Frame(main_frame)
         right_frame.pack(side='right', fill='both', expand=True, padx=5, pady=5)
         
-        # Historial de cálculos
         history_frame = ttk.LabelFrame(right_frame, text="Historial de Cálculos", padding=10)
         history_frame.pack(fill='both', expand=True, pady=(0, 10))
         
@@ -357,7 +345,6 @@ class RiskAnalysisISO13849:
         ttk.Button(history_frame, text="🗑️ Eliminar Seleccionado", 
                   command=self.delete_hrn_calculation).pack(pady=5)
         
-        # Tabla de referencia de niveles
         reference_frame = ttk.LabelFrame(right_frame, text="Tabla de Niveles de Riesgo", padding=10)
         reference_frame.pack(fill='x')
         
@@ -379,7 +366,6 @@ class RiskAnalysisISO13849:
     def calculate_hrn(self, event=None):
         """Calcular HRN"""
         try:
-            # Obtener valores seleccionados
             lo_text = self.lo_var.get()
             fe_text = self.fe_var.get()
             dph_text = self.dph_var.get()
@@ -388,46 +374,41 @@ class RiskAnalysisISO13849:
             if not all([lo_text, fe_text, dph_text, np_text]):
                 return
             
-            # Extraer valores numéricos
             lo = float(lo_text.split(' - ')[0])
             fe = float(fe_text.split(' - ')[0])
             dph = float(dph_text.split(' - ')[0])
             np = float(np_text.split(' - ')[0])
             
-            # Calcular HRN
             hrn = lo * fe * dph * np
             
-            # Determinar nivel de riesgo
             if hrn <= 1:
                 level = "Riesgo Despreciable"
-                color = '#90EE90'  # Verde claro
+                color = '#90EE90'
             elif hrn <= 5:
                 level = "Riesgo Muy Bajo"
-                color = '#98FB98'  # Verde pálido
+                color = '#98FB98'
             elif hrn <= 10:
                 level = "Riesgo Bajo"
-                color = '#FFFF99'  # Amarillo claro
+                color = '#FFFF99'
             elif hrn <= 50:
                 level = "Riesgo Significante"
-                color = '#FFD700'  # Dorado
+                color = '#FFD700'
             elif hrn <= 100:
                 level = "Riesgo Alto"
-                color = '#FFA500'  # Naranja
+                color = '#FFA500'
             elif hrn <= 500:
                 level = "Riesgo Muy Alto"
-                color = '#FF6347'  # Rojo tomate
+                color = '#FF6347'
             elif hrn <= 1000:
                 level = "Riesgo Extremo"
-                color = '#DC143C'  # Crimson
+                color = '#DC143C'
             else:
                 level = "Riesgo Inaceptable"
-                color = '#8B0000'  # Rojo oscuro
-            
-            # Mostrar resultado
+                color = '#8B0000'
+
             self.hrn_result_label.config(text=f"HRN = {hrn:.2f}", foreground=color)
             self.hrn_level_label.config(text=level, foreground=color, font=('Arial', 12, 'bold'))
             
-            # Guardar valores actuales para uso posterior
             self.current_hrn = {
                 'hrn': hrn,
                 'level': level,
@@ -455,7 +436,6 @@ class RiskAnalysisISO13849:
             messagebox.showwarning("Advertencia", "Ingrese una descripción del peligro")
             return
         
-        # Añadir al historial
         calc = {
             'description': description,
             'hrn': self.current_hrn['hrn'],
@@ -473,7 +453,6 @@ class RiskAnalysisISO13849:
         
         self.hrn_calculations.append(calc)
         
-        # Añadir al treeview
         idx = len(self.hrn_calculations)
         self.hrn_tree.insert('', 'end', text=str(idx), values=(
             description[:40] + '...' if len(description) > 40 else description,
@@ -509,7 +488,6 @@ class RiskAnalysisISO13849:
             self.hrn_calculations.pop(idx)
             self.hrn_tree.delete(selected[0])
             
-            # Reindexar
             for i, item in enumerate(self.hrn_tree.get_children()):
                 self.hrn_tree.item(item, text=str(i+1))
 
@@ -518,7 +496,6 @@ class RiskAnalysisISO13849:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="Análisis y Gráficos")
         
-        # Frame superior - Estadísticas
         stats_frame = ttk.LabelFrame(frame, text="Estadísticas", padding=10)
         stats_frame.pack(fill='x', padx=10, pady=10)
         
@@ -526,11 +503,9 @@ class RiskAnalysisISO13849:
                                      font=('Arial', 10))
         self.stats_label.pack()
         
-        # Frame para gráficos
         graph_frame = ttk.Frame(frame)
         graph_frame.pack(fill='both', expand=True, padx=10, pady=10)
         
-        # Crear figura de matplotlib
         self.fig = Figure(figsize=(12, 5))
         self.canvas = FigureCanvasTkAgg(self.fig, master=graph_frame)
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
@@ -544,7 +519,6 @@ class RiskAnalysisISO13849:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="Generar Reporte")
         
-        # Información
         info_frame = ttk.LabelFrame(frame, text="Información del Reporte", padding=20)
         info_frame.pack(fill='both', expand=True, padx=20, pady=20)
         
@@ -583,7 +557,6 @@ class RiskAnalysisISO13849:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="Acerca de")
         
-        # Frame central para contenido
         content_frame = ttk.Frame(frame)
         content_frame.place(relx=0.5, rely=0.5, anchor='center')
         
@@ -596,7 +569,6 @@ class RiskAnalysisISO13849:
         )
         title_label.pack(pady=20)
         
-        # Subtítulo
         subtitle_label = ttk.Label(
             content_frame,
             text="ISO 13849-1",
@@ -772,7 +744,7 @@ class RiskAnalysisISO13849:
     
     def update_photos_display(self):
         """Actualizar visualización de fotos"""
-        # Limpiar frame
+        
         for widget in self.photos_inner_frame.winfo_children():
             widget.destroy()
         
@@ -783,13 +755,11 @@ class RiskAnalysisISO13849:
                      foreground='gray').pack(pady=20)
             return
         
-        # Mostrar miniaturas
         for i, photo in enumerate(self.machine_photos):
             frame = ttk.Frame(self.photos_inner_frame, relief='solid', borderwidth=1)
             frame.pack(side='left', padx=5, pady=5)
             
             try:
-                # Decodificar imagen desde base64
                 img_data = base64.b64decode(photo['data'])
                 img = PILImage.open(io.BytesIO(img_data))
                 
@@ -868,7 +838,6 @@ class RiskAnalysisISO13849:
         
         self.risks.append(risk)
         
-        # Añadir al treeview
         idx = len(self.risks)
         self.risk_tree.insert('', 'end', text=str(idx), values=(
             risk['description'][:30] + '...' if len(risk['description']) > 30 else risk['description'],
@@ -905,7 +874,6 @@ class RiskAnalysisISO13849:
             self.risks.pop(idx)
             self.risk_tree.delete(selected[0])
             
-            # Reindexar
             for i, item in enumerate(self.risk_tree.get_children()):
                 self.risk_tree.item(item, text=str(i+1))
     
@@ -915,7 +883,6 @@ class RiskAnalysisISO13849:
             messagebox.showinfo("Información", "No hay datos para analizar")
             return
         
-        # Limpiar figura
         self.fig.clear()
         
         has_iso_risks = len(self.risks) > 0
@@ -1383,7 +1350,6 @@ class RiskAnalysisISO13849:
             
             messagebox.showinfo("Éxito", "Proyecto cargado correctamente")
 
-# Ejecutar aplicación
 if __name__ == "__main__":
     root = ttkbootstrap.Window()
 
