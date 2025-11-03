@@ -1,4 +1,3 @@
-import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import json
 from datetime import datetime
@@ -412,9 +411,7 @@ class RiskAnalysisISO13849:
         has_iso_risks = len(self.risks) > 0
         has_hrn_calcs = len(self.hrn_calculations) > 0
         
-        # Determinar número de subplots
         if has_iso_risks and has_hrn_calcs:
-            # Mostrar ambos análisis
             ax1 = self.fig.add_subplot(221)
             ax2 = self.fig.add_subplot(222)
             ax3 = self.fig.add_subplot(223)
@@ -426,7 +423,6 @@ class RiskAnalysisISO13849:
             ax3 = self.fig.add_subplot(121)
             ax4 = self.fig.add_subplot(122)
         
-        # Construir textos estadísticos separados
         iso_stats = ""
         hrn_stats = ""
         
@@ -445,7 +441,6 @@ class RiskAnalysisISO13849:
                 percentage = (plr_count[plr] / total) * 100
                 iso_stats += f"  PLr {plr}: {plr_count[plr]} ({percentage:.1f}%)\n"
             
-            # Gráfico de barras - Distribución PLr
             plr_labels = sorted(plr_count.keys())
             plr_values = [plr_count[plr] for plr in plr_labels]
             colors_map = {'A': '#90EE90', 'B': '#FFFF99', 'C': '#FFD700', 
@@ -485,7 +480,6 @@ class RiskAnalysisISO13849:
                 percentage = (hrn_levels[level] / total_hrn) * 100
                 hrn_stats += f"  {level}: {hrn_levels[level]} ({percentage:.1f}%)\n"
             
-            # Gráfico de barras - Distribución HRN
             level_order = [
                 "Riesgo Despreciable",
                 "Riesgo Muy Bajo",
@@ -520,7 +514,6 @@ class RiskAnalysisISO13849:
             ax3.set_title('Distribución de Riesgos HRN')
             ax3.grid(axis='y', alpha=0.3)
             
-            # Gráfico de valores HRN individuales
             hrn_values = [calc['hrn'] for calc in self.hrn_calculations]
             descriptions = [calc['description'][:15] + '...' if len(calc['description']) > 15 
                         else calc['description'] for calc in self.hrn_calculations]
@@ -551,16 +544,11 @@ class RiskAnalysisISO13849:
             ax4.set_title('Valores HRN Calculados')
             ax4.grid(axis='x', alpha=0.3)
         
-        # Combinar estadísticas lado a lado si ambos existen
         if has_iso_risks and has_hrn_calcs:
-            # Dividir en líneas
             iso_lines = iso_stats.split('\n')
             hrn_lines = hrn_stats.split('\n')
             
-            # Encontrar el ancho máximo de las líneas ISO
             max_iso_width = max(len(line) for line in iso_lines) if iso_lines else 0
-            
-            # Combinar líneas lado a lado
             max_lines = max(len(iso_lines), len(hrn_lines))
             combined_stats = []
             
@@ -568,7 +556,6 @@ class RiskAnalysisISO13849:
                 iso_line = iso_lines[i] if i < len(iso_lines) else ""
                 hrn_line = hrn_lines[i] if i < len(hrn_lines) else ""
                 
-                # Añadir padding a la línea ISO para alinear
                 iso_padded = iso_line.ljust(max_iso_width + 5)
                 combined_stats.append(f"{iso_padded}{hrn_line}")
             

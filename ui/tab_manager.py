@@ -348,20 +348,16 @@ class TabManager:
     
     def create_analysis_tab(self):
         """Pestaña de análisis y gráficos"""
-        frame = ttk.Frame(self.notebook)
+        frame = ttk.Frame(self.notebook)       
         self.notebook.add(frame, text="Análisis y Gráficos")
 
-        # Nuevo toolbar superior con el botón de actualizar
         toolbar = ttk.Frame(frame)
         toolbar.pack(fill='x', padx=10, pady=(10, 0))
-        ttk.Button(toolbar, text="Actualizar Análisis",
-                   command=self.app.update_analysis).pack(side='left')
+        ttk.Button(toolbar, text="Actualizar Análisis", command=self.app.update_analysis).pack(side='left')
 
         stats_frame = ttk.LabelFrame(frame, text="Estadísticas", padding=10)
         stats_frame.pack(fill='x', padx=10, pady=10)
-
-        self.app.stats_label = ttk.Label(stats_frame, text="No hay riesgos añadidos",
-                                           font=('Arial', 10))
+        self.app.stats_label = ttk.Label(stats_frame, text="No hay riesgos añadidos", font=('Arial', 10))
         self.app.stats_label.pack()
 
         graph_frame = ttk.Frame(frame)
@@ -536,7 +532,6 @@ class TabManager:
             messagebox.showwarning("Advertencia", "No hay fotos para eliminar")
             return
         
-        # Crear ventana de selección
         remove_window = tk.Toplevel(self.root)
         remove_window.title("Eliminar Foto")
         remove_window.geometry("400x400")
@@ -779,6 +774,4 @@ class TabManager:
 
             for i, item in enumerate(self.app.hrn_tree.get_children()):
                 self.app.hrn_tree.item(item, text=str(i+1))
-
-
 
