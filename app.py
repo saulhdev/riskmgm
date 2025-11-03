@@ -15,6 +15,7 @@ import base64
 import ttkbootstrap
 from ui.menu_manager import MenuManager
 from ui.tab_manager import TabManager
+from core.card import crear_card
 
 class RiskAnalysisISO13849:
     def __init__(self, root):
@@ -109,7 +110,7 @@ class RiskAnalysisISO13849:
             doc.rightMargin = 1 * inch
             story = []
             styles = getSampleStyleSheet()
-            
+            normal_style = styles['Normal']
             # Estilo personalizado
             title_style = ParagraphStyle(
                 'CustomTitle',
@@ -162,7 +163,6 @@ class RiskAnalysisISO13849:
             story.append(machine_table)
             story.append(Spacer(1, 0.3*inch))
             
-            # Descripción
             if self.machine_data.get('description'):
                 story.append(Paragraph("Descripción:", styles['Heading3']))
                 story.append(Paragraph(self.machine_data['description'], styles['Normal']))
@@ -172,46 +172,10 @@ class RiskAnalysisISO13849:
             
             # Tabla de riesgos
             story.append(Paragraph("EVALUACIÓN DE RIESGOS", heading_style))
-            
-            risk_table_data = [['#', 'Descripción', 'Zona', 'S', 'F', 'P', 'PLr']]
-            
             for i, risk in enumerate(self.risks, 1):
-                risk_table_data.append([
-                    str(i),
-                    risk['description'][:40] + '...' if len(risk['description']) > 40 else risk['description'],
-                    risk['zone'][:60] if risk['zone'] else '-',
-                    risk['severity'].split('-')[0].strip(),
-                    risk['frequency'].split('-')[0].strip(),
-                    risk['avoidance'].split('-')[0].strip(),
-                    risk['plr']
-                ])
-            
-            risk_table = Table(risk_table_data, colWidths=[0.3*inch, 2*inch, 3*inch, 
-                                                           0.5*inch, 0.5*inch, 0.5*inch, 0.5*inch])
-            risk_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#003366')),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ]))
-            
-            story.append(risk_table)
-            story.append(PageBreak())
-            
-            # Medidas de control
-            story.append(Paragraph("MEDIDAS DE CONTROL", heading_style))
-            
-            for i, risk in enumerate(self.risks, 1):
-                story.append(Paragraph(f"<b>{i}. {risk['description']}</b>", styles['Normal']))
-                story.append(Paragraph(f"<i>PLr requerido: {risk['plr']}</i>", styles['Normal']))
-                if risk['control_measures']:
-                    story.append(Paragraph(f"Medidas:\n{risk['control_measures']}", styles['Normal']))
+                story.append(crear_card(risk))
                 story.append(Spacer(1, 0.2*inch))
-            
+
             # Cálculos HRN si existen
             if self.hrn_calculations:
                 story.append(PageBreak())
@@ -222,7 +186,7 @@ class RiskAnalysisISO13849:
                 for i, calc in enumerate(self.hrn_calculations, 1):
                     hrn_table_data.append([
                         str(i),
-                        calc['description'][:30] + '...' if len(calc['description']) > 30 else calc['description'],
+                        Paragraph(calc['description'], normal_style),  
                         str(calc['lo']),
                         str(calc['fe']),
                         str(calc['dph']),
@@ -265,9 +229,8 @@ class RiskAnalysisISO13849:
             if self.risks:
                 self.update_analysis()
                 
-                # Guardar gráfico como imagen
                 buf = io.BytesIO()
-                self.fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
+                self.fig.savefig(buf, format='png', dpi=250, bbox_inches='tight')
                 buf.seek(0)
                 
                 story.append(PageBreak())
@@ -300,7 +263,6 @@ class RiskAnalysisISO13849:
             
             self.add_photos_to_pdf(story, styles)
             
-            # Generar PDF
             doc.build(story)
             messagebox.showinfo("Éxito", f"Reporte PDF generado correctamente:\n{filename}")
             
@@ -619,7 +581,7 @@ class RiskAnalysisISO13849:
         self.stats_label.config(text=stats_text)
         self.fig.tight_layout()
         self.canvas.draw()
-
+  
 if __name__ == "__main__":
     root = ttkbootstrap.Window()
 
