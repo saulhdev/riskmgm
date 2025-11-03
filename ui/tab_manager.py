@@ -113,8 +113,8 @@ class TabManager:
         self.risk_desc.grid(row=0, column=1, pady=5, padx=5)
 
         ttk.Label(left_frame, text="Descripción del Riesgo:").grid(row=1, column=0, sticky='w', pady=5)
-        self.app.risk_zone = ttk.Entry(left_frame, width=40)
-        self.app.risk_zone.grid(row=1, column=1, pady=5, padx=5)
+        self.risk_zone = ttk.Entry(left_frame, width=40)
+        self.risk_zone.grid(row=1, column=1, pady=5, padx=5)
         
         # Severidad (S)
         ttk.Label(left_frame, text="Severidad (S):").grid(row=2, column=0, sticky='w', pady=5)
@@ -150,8 +150,8 @@ class TabManager:
         self.avoidance.bind('<<ComboboxSelected>>', self.calculate_plr)
         
         ttk.Label(left_frame, text="Medidas de Control:").grid(row=6, column=0, sticky='nw', pady=5)
-        self.app.control_measures = tk.Text(left_frame, width=40, height=4)
-        self.app.control_measures.grid(row=6, column=1, pady=5, padx=5)
+        self.control_measures = tk.Text(left_frame, width=40, height=4)
+        self.control_measures.grid(row=6, column=1, pady=5, padx=5)
 
         btn_frame = ttk.Frame(left_frame)
         btn_frame.grid(row=7, column=0, columnspan=2, pady=20)
