@@ -178,15 +178,15 @@ class RiskAnalysisISO13849:
             for i, risk in enumerate(self.risks, 1):
                 risk_table_data.append([
                     str(i),
-                    risk['description'][:50] + '...' if len(risk['description']) > 50 else risk['description'],
-                    risk['zone'][:20] if risk['zone'] else '-',
+                    risk['description'][:40] + '...' if len(risk['description']) > 40 else risk['description'],
+                    risk['zone'][:60] if risk['zone'] else '-',
                     risk['severity'].split('-')[0].strip(),
                     risk['frequency'].split('-')[0].strip(),
                     risk['avoidance'].split('-')[0].strip(),
                     risk['plr']
                 ])
             
-            risk_table = Table(risk_table_data, colWidths=[0.3*inch, 2.5*inch, 1.2*inch, 
+            risk_table = Table(risk_table_data, colWidths=[0.3*inch, 2*inch, 3*inch, 
                                                            0.5*inch, 0.5*inch, 0.5*inch, 0.5*inch])
             risk_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#003366')),
@@ -209,7 +209,7 @@ class RiskAnalysisISO13849:
                 story.append(Paragraph(f"<b>{i}. {risk['description']}</b>", styles['Normal']))
                 story.append(Paragraph(f"<i>PLr requerido: {risk['plr']}</i>", styles['Normal']))
                 if risk['control_measures']:
-                    story.append(Paragraph(f"Medidas: {risk['control_measures']}", styles['Normal']))
+                    story.append(Paragraph(f"Medidas:\n{risk['control_measures']}", styles['Normal']))
                 story.append(Spacer(1, 0.2*inch))
             
             # Cálculos HRN si existen

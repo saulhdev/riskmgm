@@ -113,8 +113,8 @@ class TabManager:
         self.risk_desc.grid(row=0, column=1, pady=5, padx=5)
 
         ttk.Label(left_frame, text="Descripción del Riesgo:").grid(row=1, column=0, sticky='w', pady=5)
-        self.risk_zone = ttk.Entry(left_frame, width=40)
-        self.risk_zone.grid(row=1, column=1, pady=5, padx=5)
+        self.app.risk_zone = ttk.Entry(left_frame, width=40)
+        self.app.risk_zone.grid(row=1, column=1, pady=5, padx=5)
         
         # Severidad (S)
         ttk.Label(left_frame, text="Severidad (S):").grid(row=2, column=0, sticky='w', pady=5)
@@ -608,7 +608,7 @@ class TabManager:
             'frequency': self.frequency.get(),
             'avoidance': self.avoidance.get(),
             'plr': plr.upper(),
-            'control_measures': self.app.control_measures.get('1.0', 'end-1c')
+            'control_measures': self.control_measures.get('1.0', 'end-1c')
         }
         
         self.app.risks.append(risk)
@@ -628,13 +628,13 @@ class TabManager:
     
     def clear_risk_form(self):
         """Limpiar formulario de riesgo"""
-        self.app.risk_desc.delete(0, 'end')
-        self.app.risk_zone.delete(0, 'end')
-        self.app.severity.set('')
-        self.app.frequency.set('')
-        self.app.avoidance.set('')
-        self.app.control_measures.delete('1.0', 'end')
-        self.app.plr_label.config(text="Seleccione S, F y P", foreground='blue', 
+        self.risk_desc.delete(0, 'end')
+        self.risk_zone.delete(0, 'end')
+        self.severity.set('')
+        self.frequency.set('')
+        self.avoidance.set('')
+        self.control_measures.delete('1.0', 'end')
+        self.plr_label.config(text="Seleccione S, F y P", foreground='blue', 
                              font=('Arial', 10))
     
     def delete_risk(self):
