@@ -355,10 +355,10 @@ class TabManager:
         toolbar.pack(fill='x', padx=10, pady=(10, 0))
         ttk.Button(toolbar, text="Actualizar Análisis", command=self.app.update_analysis).pack(side='left')
 
-        stats_frame = ttk.LabelFrame(frame, text="Estadísticas", padding=10)
-        stats_frame.pack(fill='x', padx=10, pady=10)
-        self.app.stats_label = ttk.Label(stats_frame, text="No hay riesgos añadidos", font=('Arial', 10))
-        self.app.stats_label.pack()
+        #stats_frame = ttk.LabelFrame(frame, text="Estadísticas", padding=10)
+        #stats_frame.pack(fill='x', padx=10, pady=10)
+        #self.app.stats_label = ttk.Label(stats_frame, text="No hay riesgos añadidos", font=('Arial', 10))
+        #self.app.stats_label.pack()
 
         graph_frame = ttk.Frame(frame)
         graph_frame.pack(fill='both', expand=True, padx=10, pady=10)

@@ -104,13 +104,12 @@ class RiskAnalysisISO13849:
         try:
             doc = SimpleDocTemplate(filename, pagesize=letter)
             doc.topMargin = 0.75 * inch
-            doc.bottomMargin = 0.75 * inch
-            doc.leftMargin = 1 * inch
-            doc.rightMargin = 1 * inch
+            doc.bottomMargin = 0.5 * inch
+            doc.leftMargin = 0.75 * inch
+            doc.rightMargin = 0.75 * inch
             story = []
             styles = getSampleStyleSheet()
             normal_style = styles['Normal']
-            # Estilo personalizado
             title_style = ParagraphStyle(
                 'CustomTitle',
                 parent=styles['Heading1'],
@@ -234,8 +233,7 @@ class RiskAnalysisISO13849:
                 
                 story.append(PageBreak())
                 story.append(Paragraph("ANÁLISIS GRÁFICO", heading_style))
-                
-                
+
                 for i, calc in enumerate(self.hrn_calculations, 1):
                     story.append(Paragraph(f"<b>{i}. {calc['description']}</b>", styles['Normal']))
                     story.append(Paragraph(f"LO ({calc['lo']}): {calc['lo_desc']}", styles['Normal']))
@@ -506,7 +504,7 @@ class RiskAnalysisISO13849:
             level_values = [hrn_levels[level] for level in present_levels]
             bar_colors_hrn = [level_colors[level] for level in present_levels]
             
-            ax3.bar(range(len(present_levels)), level_values, color=bar_colors_hrn, edgecolor='black')
+            ax3.bar(range(len(present_levels)), level_values, width=0.5, color=bar_colors_hrn, edgecolor='black')
             ax3.set_xticks(range(len(present_levels)))
             ax3.set_xticklabels([l.replace('Riesgo ', '') for l in present_levels], rotation=45, ha='right')
             ax3.set_xlabel('Nivel de Riesgo')
@@ -565,7 +563,7 @@ class RiskAnalysisISO13849:
         else:
             stats_text = hrn_stats
         
-        self.stats_label.config(text=stats_text)
+        #self.stats_label.config(text=stats_text)
         self.fig.tight_layout()
         self.canvas.draw()
   
